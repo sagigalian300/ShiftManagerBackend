@@ -1,0 +1,38 @@
+const supabase = require("../supabase");
+
+async function addRoleToDB(name, desc) {
+  console.log("Adding role to DB:", name, desc);
+  const { data, error } = await supabase.from("roles").insert([{ name, desc }]);
+  if (error) {
+    console.error("Error adding role:", error);
+    return { success: false, error };
+  }
+  return { success: true, data };
+}
+
+async function deleteRoleFromDB(roleId) {
+  const { data, error } = await supabase
+    .from("roles")
+    .delete()
+    .eq("id", roleId);
+  if (error) {
+    console.error("Error deleting role:", error);
+    return { success: false, error };
+  }
+  return { success: true, data };
+}
+
+async function getAllRolesFromDB() {
+  const { data, error } = await supabase.from("roles").select("*");
+  if (error) {
+    console.error("Error fetching roles:", error);
+    return { success: false, error };
+  }
+  return { success: true, data };
+}
+
+module.exports = {
+  addRoleToDB,
+  getAllRolesFromDB,
+  deleteRoleFromDB,
+};
