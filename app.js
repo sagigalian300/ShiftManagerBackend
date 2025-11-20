@@ -5,6 +5,7 @@ require("dotenv").config();
 const usersRouter = require("./routes/users");
 const rolesRouter = require("./routes/roles");
 const workersRouter = require("./routes/worker");
+const shiftsRouter = require("./routes/shifts");
 
 const PORT = process.env.PORT || 3001;
 
@@ -18,6 +19,7 @@ app.use(express.json());
 app.use("/user", usersRouter);
 app.use("/role", rolesRouter);
 app.use("/worker", workersRouter);
+app.use("/shift", shiftsRouter);
 
 // Start server
 app.listen(PORT, async () => {
