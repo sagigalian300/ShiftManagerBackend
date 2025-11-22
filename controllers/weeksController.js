@@ -2,6 +2,9 @@ const {
   addWeekToDB,
   getAllWeeksFromDB,
   getDaysByWeekIdFromDB,
+  getShiftsByDayIdFromDB,
+  addShiftDataToDB,
+  getShiftsAssignmentsFromDB,
 } = require("../models/ShiftCRUD");
 
 async function addWeeklyShifts(req, res) {
@@ -16,6 +19,18 @@ async function addWeeklyShifts(req, res) {
   res.status(200).json({
     message: "Weekly shifts added successfully",
     week_id: result.week_id,
+  });
+}
+
+async function addShiftAssignments(req, res) {
+  const shift_data = req.body;
+
+  const result = await addShiftDataToDB(shift_data);
+  if (!result.success) {
+    res.status(500).json({ message: "Error adding shift data" });
+  }
+  res.status(200).json({
+    message: "Shifts data added successfully",
   });
 }
 
@@ -36,4 +51,29 @@ async function getDaysByWeekId(req, res) {
   res.status(200).json({ days: result.days });
 }
 
-module.exports = { addWeeklyShifts, getAllWeeks, getDaysByWeekId };
+async function getShiftsByDayId(req, res) {
+  const day_id = req.params.day_id;
+  const result = await getShiftsByDayIdFromDB(day_id);
+  if (!result.success) {
+    res.status(500).json({ message: "Error fetching shifts for the day" });
+  }
+  res.status(200).json({ shifts: result.shifts });
+}
+
+async function getShiftAssignments(req, res) {
+  const shift_id = req.params.shift_id;
+  const result = await getShiftsAssignmentsFromDB(shift_id);
+  if (!result.success) {
+    res.status(500).json({ message: "Error fetching shift assignmetns" });
+  }
+  res.status(200).json({ shift_assignments: result.shift_assignments });
+}
+
+module.exports = {
+  addWeeklyShifts,
+  getAllWeeks,
+  getDaysByWeekId,
+  getShiftsByDayId,
+  addShiftAssignments,
+  getShiftAssignments,
+};

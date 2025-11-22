@@ -69,8 +69,58 @@ async function addShiftsToDB(days) {
   return true;
 }
 
+async function addShiftDataToDB(shift_data) {
+  const { shift_id, shift_assignments } = shift_data;
+
+  // Flatten all workers inside the nested arrays
+  const rowsToInsert = shift_assignments
+    .flat() // turns [ [worker], [], [worker], ... ] → [worker, worker]
+    .map((worker) => ({
+      shift_id: shift_id,
+      worker_id: worker.id,
+      role_id: worker.choosenRole,
+    }));
+
+  try {
+    // Start a transaction-like flow: delete old rows first
+    const deleteRes = await supabase
+      .from("shift_assignments")
+      .delete()
+      .eq("shift_id", shift_id);
+
+    if (deleteRes.error) {
+      console.error("Error deleting old shift assignments:", deleteRes.error);
+      return { success: false };
+    }
+
+    // If nothing to insert, return success
+    if (rowsToInsert.length === 0) {
+      return { success: true };
+    }
+
+    // Insert the new assignments
+    const insertRes = await supabase
+      .from("shift_assignments")
+      .insert(rowsToInsert)
+      .select();
+
+    if (insertRes.error) {
+      console.error("Error adding shift assignments:", insertRes.error);
+      return { success: false };
+    }
+
+    return { success: true };
+  } catch (err) {
+    console.error("Unexpected error:", err);
+    return { success: false };
+  }
+}
+
 async function getAllWeeksFromDB() {
-  const res = await supabase.from("weeks").select("*").order("start_date", { ascending: false });
+  const res = await supabase
+    .from("weeks")
+    .select("*")
+    .order("start_date", { ascending: false });
   if (res.error) {
     console.error("Error fetching weeks:", res.error);
     return { success: false, weeks: [] };
@@ -91,4 +141,59 @@ async function getDaysByWeekIdFromDB(week_id) {
   return { success: true, days: res.data };
 }
 
-module.exports = { addWeekToDB, getAllWeeksFromDB, getDaysByWeekIdFromDB };
+async function getShiftsByDayIdFromDB(day_id) {
+  const res = await supabase
+    .from("shifts")
+    .select("*")
+    .eq("day_id", day_id)
+    .order("type");
+  if (res.error) {
+    console.error("Error fetching shifts by day ID:", res.error);
+    return { success: false, shifts: [] };
+  }
+  return { success: true, shifts: res.data };
+}
+
+async function getShiftsAssignmentsFromDB(shift_id) {
+  const res = await supabase
+    .from("shift_assignments")
+    .select(
+      `
+      role_id,
+      workers:worker_id (
+        id,
+        first_name,
+        last_name,
+        email
+      )
+    `
+    )
+    .eq("shift_id", shift_id);
+
+  if (res.error) {
+    console.error("Error fetching shift assignments", res.error);
+    return { success: false, shift_assignments: [] };
+  }
+
+  // Group by role_id
+  const grouped = res.data.reduce((acc, curr) => {
+    const roleEntry = acc.find((r) => r.role_id === curr.role_id);
+    if (roleEntry) {
+      roleEntry.workers.push(curr.workers);
+    } else {
+      acc.push({ role_id: curr.role_id, workers: [curr.workers] });
+    }
+    return acc;
+  }, []);
+
+  return { success: true, shift_assignments: grouped };
+}
+
+module.exports = {
+  addWeekToDB,
+  getAllWeeksFromDB,
+  getDaysByWeekIdFromDB,
+  getShiftsByDayIdFromDB,
+  addShiftDataToDB,
+  getShiftsAssignmentsFromDB,
+};
