@@ -1,8 +1,7 @@
 const supabase = require("../supabase");
 
-async function addRoleToDB(name, desc) {
-  console.log("Adding role to DB:", name, desc);
-  const { data, error } = await supabase.from("roles").insert([{ name, desc }]);
+async function addRoleToDB(name, desc, boss_id) {
+  const { data, error } = await supabase.from("roles").insert([{ name, desc, boss_id }]);
   if (error) {
     console.error("Error adding role:", error);
     return { success: false, error };
@@ -22,8 +21,11 @@ async function deleteRoleFromDB(roleId) {
   return { success: true, data };
 }
 
-async function getAllRolesFromDB() {
-  const { data, error } = await supabase.from("roles").select("*");
+async function getAllRolesFromDB(userId) {
+  const { data, error } = await supabase
+    .from("roles")
+    .select("*")
+    .eq("boss_id", userId);
   if (error) {
     console.error("Error fetching roles:", error);
     return { success: false, error };

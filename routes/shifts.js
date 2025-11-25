@@ -1,3 +1,4 @@
+const { loginCheck } = require("../auth/loggedInCheck");
 const express = require("express");
 const {
   addWeeklyShifts,
@@ -9,12 +10,11 @@ const {
 } = require("../controllers/weeksController");
 const router = express.Router();
 
-router.post("/addWeeklyShifts", addWeeklyShifts);
-router.post("/addShiftAssignments", addShiftAssignments);
-router.get("/getAllWeeks", getAllWeeks);
-router.get("/getDaysByWeekId/:week_id", getDaysByWeekId);
-router.get("/getShiftsByDayId/:day_id", getShiftsByDayId);
-router.get("/getShiftAssignments/:shift_id", getShiftAssignments);
-
+router.post("/addWeeklyShifts", loginCheck, addWeeklyShifts);
+router.post("/addShiftAssignments", loginCheck, addShiftAssignments);
+router.get("/getAllWeeks", loginCheck, getAllWeeks);
+router.get("/getDaysByWeekId/:week_id", loginCheck, getDaysByWeekId);
+router.get("/getShiftsByDayId/:day_id", loginCheck, getShiftsByDayId);
+router.get("/getShiftAssignments/:shift_id", loginCheck, getShiftAssignments);
 
 module.exports = router;

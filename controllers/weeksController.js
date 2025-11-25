@@ -9,8 +9,10 @@ const {
 
 async function addWeeklyShifts(req, res) {
   const days = req.body;
+  const userId = req.userId;
+
   //   console.log(days);
-  const result = await addWeekToDB(days);
+  const result = await addWeekToDB(days, userId);
   if (!result.success) {
     res
       .status(500)
@@ -35,7 +37,9 @@ async function addShiftAssignments(req, res) {
 }
 
 async function getAllWeeks(req, res) {
-  const result = await getAllWeeksFromDB();
+  const userId = req.userId;
+
+  const result = await getAllWeeksFromDB(userId);
   if (!result.success) {
     res.status(500).json({ message: "Error fetching weeks" });
   }

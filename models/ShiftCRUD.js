@@ -1,11 +1,11 @@
 const supabase = require("../supabase");
 
-async function addWeekToDB(days) {
+async function addWeekToDB(days, userId) {
   const start_date = new Date(days[0].date);
 
   const res = await supabase
     .from("weeks")
-    .insert({ start_date })
+    .insert({ start_date, boss_id: userId })
     .select()
     .single();
 
@@ -116,10 +116,11 @@ async function addShiftDataToDB(shift_data) {
   }
 }
 
-async function getAllWeeksFromDB() {
+async function getAllWeeksFromDB(userId) {
   const res = await supabase
     .from("weeks")
     .select("*")
+    .eq("boss_id", userId)
     .order("start_date", { ascending: false });
   if (res.error) {
     console.error("Error fetching weeks:", res.error);

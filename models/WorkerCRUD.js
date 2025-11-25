@@ -37,8 +37,64 @@ async function addWorkerToDB(firstName, lastName, email, phone, salary, roles) {
   return { success: true };
 }
 
-async function getAllWorkersFromDB() {
-  const { data, error } = await supabase.from("workers").select(`
+async function updateWorkerDetailsToDB(
+  worker_id,
+  firstName,
+  lastName,
+  email,
+  phone,
+  salary,
+  roles
+) {
+  // 1) Update worker basic details
+  const { data, error } = await supabase
+    .from("workers")
+    .update({
+      first_name: firstName,
+      last_name: lastName,
+      email,
+      phone,
+      salary,
+    })
+    .eq("id", worker_id)
+    .select();
+
+  if (error) {
+    console.log("Error updating worker:", error);
+    return { success: false, error };
+  }
+
+  // 2) Remove old roles
+  const { error: deleteError } = await supabase
+    .from("worker_roles")
+    .delete()
+    .eq("worker_id", worker_id);
+
+  if (deleteError) {
+    console.log("Error removing previous roles:", deleteError);
+    return { success: false, error: deleteError };
+  }
+
+  // 3) Insert updated roles
+  const { error: roleError } = await supabase.from("worker_roles").insert(
+    roles.map((role) => ({
+      worker_id: worker_id,
+      role_id: role.id,
+    }))
+  );
+
+  if (roleError) {
+    console.log("Error assigning new roles:", roleError);
+    return { success: false, error: roleError };
+  }
+  return { success: true };
+}
+
+async function getAllWorkersFromDB(userId) {
+  const { data, error } = await supabase
+    .from("workers")
+    .select(
+      `
       *,
       worker_roles (
         roles (
@@ -47,7 +103,9 @@ async function getAllWorkersFromDB() {
           desc
         )
       )
-    `);
+    `
+    )
+    .eq("boss_id", userId);
 
   if (error) {
     console.log("Error fetching workers:", error);
@@ -60,8 +118,11 @@ async function getAllWorkersFromDB() {
     roles: worker.worker_roles.map((wr) => wr.roles),
   }));
 
-  console.log(transformed);
   return { success: true, data: transformed };
 }
 
-module.exports = { addWorkerToDB, getAllWorkersFromDB };
+module.exports = {
+  addWorkerToDB,
+  getAllWorkersFromDB,
+  updateWorkerDetailsToDB,
+};

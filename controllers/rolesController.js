@@ -1,8 +1,10 @@
 const { addRoleToDB, getAllRolesFromDB, deleteRoleFromDB } = require("../models/RoleCRUD");
 
 async function addRole(req, res) {
+  const userId = req.userId;
+
   const { name, desc } = req.body;
-  const result = await addRoleToDB(name, desc);
+  const result = await addRoleToDB(name, desc, userId);
 
   if (result.success) {
     res
@@ -26,7 +28,9 @@ async function deleteRole(req, res) {
 }
 
 async function getAllRoles(req, res) {
-  const result = await getAllRolesFromDB();
+  const userId = req.userId;
+
+  const result = await getAllRolesFromDB(userId);
   if (result.success) {
     res.status(200).json({ data: result.data });
   } else {
