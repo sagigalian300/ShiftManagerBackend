@@ -1,6 +1,16 @@
+const { Hasher } = require("../auth/symmetricalEncryption/hasher");
 const supabase = require("../supabase");
 
-async function addWorkerToDB(firstName, lastName, email, phone, salary, roles) {
+async function addWorkerToDB(
+  firstName,
+  lastName,
+  email,
+  phone,
+  salary,
+  roles,
+  password,
+  rank
+) {
   const { data, error } = await supabase
     .from("workers")
     .insert([
@@ -10,6 +20,8 @@ async function addWorkerToDB(firstName, lastName, email, phone, salary, roles) {
         email,
         phone,
         salary,
+        password,
+        rank,
       },
     ])
     .select();
@@ -44,7 +56,9 @@ async function updateWorkerDetailsToDB(
   email,
   phone,
   salary,
-  roles
+  roles,
+  password,
+  rank
 ) {
   // 1) Update worker basic details
   const { data, error } = await supabase
@@ -55,6 +69,8 @@ async function updateWorkerDetailsToDB(
       email,
       phone,
       salary,
+      password,
+      rank,
     })
     .eq("id", worker_id)
     .select();
@@ -121,8 +137,42 @@ async function getAllWorkersFromDB(userId) {
   return { success: true, data: transformed };
 }
 
+async function deleteWorkerFromDB(workerId) {
+  // Database automatically handles deletion in worker_roles and shift_assignments
+  const { data, error } = await supabase
+    .from("workers")
+    .delete()
+    .eq("id", workerId);
+
+  if (error) {
+    console.error("Error deleting worker:", error);
+    return { success: false, error };
+  }
+  return { success: true, data: "Worker successfully deleted" };
+}
+
+async function workerLoginToDB(name, password, boss_id) {
+  const { data, error } = await supabase.from("workers").select().match({
+    first_name: name,
+    password,
+    boss_id,
+  });
+
+  if (error) {
+    console.log("Error logging in worker:", error);
+    return { success: false, error };
+  }
+  if (data.length === 0) {
+    return { success: false, error: "Invalid credentials" };
+  }
+
+  return { success: true, data };
+}
+
 module.exports = {
   addWorkerToDB,
   getAllWorkersFromDB,
   updateWorkerDetailsToDB,
+  deleteWorkerFromDB,
+  workerLoginToDB,
 };

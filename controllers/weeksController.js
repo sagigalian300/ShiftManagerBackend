@@ -1,3 +1,5 @@
+const { Hasher } = require("../auth/symmetricalEncryption/hasher");
+
 const {
   addWeekToDB,
   getAllWeeksFromDB,
@@ -73,6 +75,15 @@ async function getShiftAssignments(req, res) {
   res.status(200).json({ shift_assignments: result.shift_assignments });
 }
 
+async function getEncryptedBossAndWeek(req, res) {
+  const week_id = req.params.week_id.toString();
+  const userId = req.userId.toString();
+
+  const encryptedWeek = Hasher.encrypt(week_id);
+  const encryptedBoss = Hasher.encrypt(userId);
+  res.status(200).json({ encryptedWeek, encryptedBoss });
+}
+
 module.exports = {
   addWeeklyShifts,
   getAllWeeks,
@@ -80,4 +91,5 @@ module.exports = {
   getShiftsByDayId,
   addShiftAssignments,
   getShiftAssignments,
+  getEncryptedBossAndWeek,
 };

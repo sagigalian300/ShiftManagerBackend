@@ -8,6 +8,7 @@ const rolesRouter = require("./routes/roles");
 const workersRouter = require("./routes/worker");
 const shiftsRouter = require("./routes/shifts");
 const { loginCheck } = require("./auth/loggedInCheck");
+const { workerLoginCheck } = require("./auth/workerLoggedInCheck");
 
 const PORT = process.env.PORT || 3001;
 
@@ -32,6 +33,10 @@ app.use("/shift", shiftsRouter);
 // status route
 app.get("/status", loginCheck, (req, res) => {
   res.status(200).send("Valid Token");
+});
+
+app.get("/worker-status", workerLoginCheck, (req, res) => {
+  res.status(200).send("Worker route is operational");
 });
 
 // Start server
