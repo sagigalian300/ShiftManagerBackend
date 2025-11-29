@@ -13,6 +13,7 @@ async function workerLoginCheck(req, res, next) {
     const decoded = jwt.verify(token, JWT_SECRET);
     req.workerId = decoded.workerId;
     req.userId = decoded.bossId;
+    req.weekId = decoded.weekId;
     next();
   } catch (err) {
     return res.status(401).json({

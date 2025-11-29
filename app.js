@@ -7,6 +7,7 @@ const usersRouter = require("./routes/users");
 const rolesRouter = require("./routes/roles");
 const workersRouter = require("./routes/worker");
 const shiftsRouter = require("./routes/shifts");
+const workerAssignmentsRouter = require("./routes/workerAssignments");
 const { loginCheck } = require("./auth/loggedInCheck");
 const { workerLoginCheck } = require("./auth/workerLoggedInCheck");
 
@@ -29,6 +30,7 @@ app.use("/user", usersRouter);
 app.use("/role", rolesRouter);
 app.use("/worker", workersRouter);
 app.use("/shift", shiftsRouter);
+app.use("/workerAssignments", workerAssignmentsRouter);
 
 // status route
 app.get("/status", loginCheck, (req, res) => {
