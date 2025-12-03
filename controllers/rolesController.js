@@ -3,8 +3,8 @@ const { addRoleToDB, getAllRolesFromDB, deleteRoleFromDB } = require("../models/
 async function addRole(req, res) {
   const userId = req.userId;
 
-  const { name, desc } = req.body;
-  const result = await addRoleToDB(name, desc, userId);
+  const { name, desc, numOfWorkers } = req.body;
+  const result = await addRoleToDB(name, desc, numOfWorkers, userId);
 
   if (result.success) {
     res

@@ -1,4 +1,4 @@
-const { Hasher } = require("../auth/symmetricalEncryption/hasher");
+const { Hasher } = require("../services/symmetricalEncryption/encryptor");
 const supabase = require("../supabase");
 
 async function addWorkerToDB(
@@ -9,7 +9,8 @@ async function addWorkerToDB(
   salary,
   roles,
   password,
-  rank
+  rank,
+  bossId
 ) {
   const { data, error } = await supabase
     .from("workers")
@@ -22,6 +23,7 @@ async function addWorkerToDB(
         salary,
         password,
         rank,
+        boss_id: bossId,
       },
     ])
     .select();
@@ -151,10 +153,9 @@ async function deleteWorkerFromDB(workerId) {
   return { success: true, data: "Worker successfully deleted" };
 }
 
-async function workerLoginToDB(name, password, boss_id) {
+async function getWorkerByNameAndBossIdFromDB(name, boss_id) {
   const { data, error } = await supabase.from("workers").select().match({
     first_name: name,
-    password,
     boss_id,
   });
 
@@ -163,10 +164,10 @@ async function workerLoginToDB(name, password, boss_id) {
     return { success: false, error };
   }
   if (data.length === 0) {
-    return { success: false, error: "Invalid credentials" };
+    return { success: false, worker: null, error: "Invalid credentials" };
   }
 
-  return { success: true, data };
+  return { success: true, worker: data[0] };
 }
 
 module.exports = {
@@ -174,5 +175,5 @@ module.exports = {
   getAllWorkersFromDB,
   updateWorkerDetailsToDB,
   deleteWorkerFromDB,
-  workerLoginToDB,
+  getWorkerByNameAndBossIdFromDB,
 };

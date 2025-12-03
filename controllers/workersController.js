@@ -1,16 +1,19 @@
-const { Hasher } = require("../auth/symmetricalEncryption/hasher");
+const { decrypt } = require("../services/symmetricalEncryption/encryptor");
 const jwt = require("jsonwebtoken");
 const {
   addWorkerToDB,
   getAllWorkersFromDB,
   updateWorkerDetailsToDB,
   deleteWorkerFromDB,
-  workerLoginToDB,
+  getWorkerByNameAndBossIdFromDB,
 } = require("../models/WorkerCRUD");
+const { hash, verify } = require("../services/hasher");
 
 async function addWorker(req, res) {
   const { firstName, lastName, email, phone, salary, roles, password, rank } =
     req.body;
+  const hashedPassword = await hash(password);
+  const bossId = req.userId;
 
   const result = await addWorkerToDB(
     firstName,
@@ -19,8 +22,9 @@ async function addWorker(req, res) {
     phone,
     salary,
     roles,
-    password,
-    rank
+    hashedPassword,
+    rank,
+    bossId
   );
   res.json({ success: true, data: result.data });
 }
@@ -93,22 +97,22 @@ async function deleteWorker(req, res) {
 
 async function workerLogin(req, res) {
   const { name, password, encrypted_boss_id, encrypted_week_id } = req.body;
-  const boss_id = Hasher.decrypt(encrypted_boss_id.toString());
-  const week_id = Hasher.decrypt(encrypted_week_id.toString());
+  const boss_id = decrypt(encrypted_boss_id.toString());
+  const week_id = decrypt(encrypted_week_id.toString());
 
-  const result = await workerLoginToDB(name, password, boss_id);
+  const result = await getWorkerByNameAndBossIdFromDB(name, boss_id);
 
-  if (!result.success) {
-    return res
-      .status(401)
-      .json({ success: false, message: "Invalid credentials." });
+  const passwordMatch = await verify(result.worker.password, password);
+
+  if (!result.success || !passwordMatch) {
+    return res.json({ success: false, message: "Invalid credentials." });
   }
 
   const JWT_SECRET = process.env.JWT_SECRET;
   const worker_token = jwt.sign(
     {
-      workerId: result.data[0].id,
-      bossId: result.data[0].boss_id,
+      workerId: result.worker.id,
+      bossId: result.worker.boss_id,
       weekId: week_id,
     },
     JWT_SECRET,

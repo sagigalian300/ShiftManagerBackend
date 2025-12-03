@@ -63,6 +63,7 @@ async function getWeekToAssignToFromDB(weekId) {
   }
 }
 
+
 async function addWorkerSuggestedAssignmentToDB(suggestion, workerId) {
   try {
     if (!workerId) {
@@ -111,6 +112,7 @@ async function addWorkerSuggestedAssignmentToDB(suggestion, workerId) {
     return { success: false, error: error.message || error };
   }
 }
+
 
 module.exports = {
   getWeekToAssignToFromDB,

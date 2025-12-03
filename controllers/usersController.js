@@ -1,7 +1,48 @@
-const jwt = require("jsonwebtoken");
-const { getAllUsersFromDB, getUserByUsername } = require("../models/UserCRUD");
+  const jwt = require("jsonwebtoken");
+const {
+  getAllUsersFromDB,
+  getUserByUsername,
+  getUserCountFromDB,
+  createUserInDB,
+} = require("../models/UserCRUD");
+const { hash, verify } = require("../services/hasher");
 
 const JWT_SECRET = process.env.JWT_SECRET;
+
+async function register(req, res) {
+  try {
+    const { username, password } = req.body;
+    if (!username || !password) {
+      return res.status(400).json({
+        success: false,
+        message: "Username and password are required.",
+      });
+    }
+    // check whether this is the first user ever => make admin
+    const userCount = await getUserCountFromDB();
+    const isFirstUser = userCount === 0;
+
+    const existingUser = await getUserByUsername(username);
+    if (existingUser.user) {
+      return res.json({
+        success: false,
+        message: "Username already exists.",
+      });
+    }
+    const hashedPassword = await hash(password);
+    const success = await createUserInDB(username, hashedPassword, isFirstUser);
+    return res.status(201).json({
+      success,
+      message: "User registered successfully.",
+    });
+  } catch (err) {
+    console.error("Registration error:", err);
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error.",
+    });
+  }
+}
 
 async function logout(req, res) {
   res.clearCookie("auth_token", {
@@ -27,7 +68,15 @@ async function login(req, res) {
 
     const { user } = await getUserByUsername(username);
 
-    if (password !== user.password) {
+    if (!user) {
+      return res
+        .status(401)
+        .json({ success: false, message: "Invalid username or password." });
+    }
+
+    const passwordMatch = await verify(user.password, password);
+
+    if (!passwordMatch) {
       return res
         .status(401)
         .json({ success: false, message: "Invalid username or password." });
@@ -69,4 +118,5 @@ module.exports = {
   login,
   getAllUsers,
   logout,
+  register,
 };
