@@ -1,7 +1,9 @@
 const supabase = require("../supabase");
 
 async function addRoleToDB(name, desc, numOfWorkers, boss_id) {
-  const { data, error } = await supabase.from("roles").insert([{ name, desc, numOfWorkers, boss_id }]);
+  const { data, error } = await supabase
+    .from("roles")
+    .insert([{ name, desc, numOfWorkers, boss_id }]);
   if (error) {
     console.error("Error adding role:", error);
     return { success: false, error };

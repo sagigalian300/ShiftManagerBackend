@@ -1,4 +1,4 @@
-const { loginCheck } = require("../auth/loggedInCheck");
+const { loginCheck } = require("../middleware/loggedInCheck");
 const express = require("express");
 const {
   addWeeklyShifts,

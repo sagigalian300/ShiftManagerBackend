@@ -63,7 +63,6 @@ async function getWeekToAssignToFromDB(weekId) {
   }
 }
 
-
 async function addWorkerSuggestedAssignmentToDB(suggestion, workerId) {
   try {
     if (!workerId) {
@@ -113,8 +112,36 @@ async function addWorkerSuggestedAssignmentToDB(suggestion, workerId) {
   }
 }
 
+async function getWorkerSuggestionsForWeekFromDB(weekId) {
+  const { data, error } = await supabase
+    .from("worker_suggestions_assignment")
+    .select(
+      `
+      worker_id,
+      shift_id,
+      shifts!inner (
+        days!inner (
+          week_id
+        )
+      )
+    `
+    )
+    .eq("shifts.days.week_id", weekId);
 
+  if (error) {
+    console.error("Error fetching suggestions:", error);
+    return [];
+  }
+
+  const flatData = data.map((item) => ({
+    worker_id: item.worker_id,
+    shift_id: item.shift_id,
+    week_id: item.shifts.days.week_id,
+  }));
+  return flatData;
+}
 module.exports = {
   getWeekToAssignToFromDB,
   addWorkerSuggestedAssignmentToDB,
+  getWorkerSuggestionsForWeekFromDB,
 };

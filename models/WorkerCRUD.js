@@ -170,10 +170,55 @@ async function getWorkerByNameAndBossIdFromDB(name, boss_id) {
   return { success: true, worker: data[0] };
 }
 
+async function getWorkerRolesFromDB(userId) {
+  const { data, error } = await supabase
+    .from("worker_roles") // 1. Start from the table that has the columns you want (worker_id, role_id)
+    .select(
+      `
+      worker_id,
+      role_id,
+      workers!inner (
+        boss_id
+      )
+    `
+    )
+    .eq("workers.boss_id", userId);
+
+  if (error) {
+    console.error("Error fetching roles:", error);
+    return [];
+  }
+
+  const formattedData = data.map((row) => ({
+    user_id: row.workers.boss_id,
+    worker_id: row.worker_id,
+    role_id: row.role_id,
+  }));
+
+  return formattedData;
+}
+
+async function getWorkerNameById(workerId) {
+  const { data, error } = await supabase
+    .from("workers")
+    .select("first_name, last_name")
+    .eq("id", workerId)
+    .single();
+
+  if (error) {
+    console.error("Error fetching worker name:", error);
+    return { success: false, error };
+  }
+
+  return { success: true, data };
+}
+
 module.exports = {
   addWorkerToDB,
   getAllWorkersFromDB,
   updateWorkerDetailsToDB,
   deleteWorkerFromDB,
   getWorkerByNameAndBossIdFromDB,
+  getWorkerRolesFromDB,
+  getWorkerNameById,
 };

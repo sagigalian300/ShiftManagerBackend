@@ -190,6 +190,21 @@ async function getShiftsAssignmentsFromDB(shift_id) {
   return { success: true, shift_assignments: grouped };
 }
 
+async function getShiftsForWeekFromDB(week_id) {
+  const { data, error } = await supabase
+    .from("shifts")
+    // 1. Force an INNER JOIN on the 'days' table
+    //    and apply the filter to the joined table
+    .select("*, days!inner(*)")
+    .eq("days.week_id", week_id);
+
+  if (error) {
+    console.error("Error fetching shifts:", error);
+    return null;
+  }
+  return data;
+}
+
 module.exports = {
   addWeekToDB,
   getAllWeeksFromDB,
@@ -197,4 +212,5 @@ module.exports = {
   getShiftsByDayIdFromDB,
   addShiftDataToDB,
   getShiftsAssignmentsFromDB,
+  getShiftsForWeekFromDB,
 };

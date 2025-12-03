@@ -2,13 +2,19 @@ const {
   getWeekToAssignToFromDB,
   addWorkerSuggestedAssignmentToDB,
 } = require("../models/workerAssignmentsCRUD");
+const { getWorkerNameById } = require("../models/WorkerCRUD");
 
 async function getWeekToAssignTo(req, res) {
   const weekId = req.weekId;
+  const workerId = req.workerId;
+
+  const resultName = await getWorkerNameById(workerId);
+  const workerName =
+    resultName.data.first_name + " " + resultName.data.last_name;
 
   const result = await getWeekToAssignToFromDB(weekId);
   if (result.success) {
-    res.json({ success: true, data: result.data });
+    res.json({ success: true, data: result.data, workerName });
   } else {
     res.status(500).json({ success: false, error: result.error });
   }

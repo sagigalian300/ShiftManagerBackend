@@ -1,4 +1,7 @@
-const { encrypt, decrypt } = require("../services/symmetricalEncryption/encryptor");
+const {
+  encrypt,
+  decrypt,
+} = require("../services/symmetricalEncryption/encryptor");
 
 const {
   addWeekToDB,
@@ -7,6 +10,7 @@ const {
   getShiftsByDayIdFromDB,
   addShiftDataToDB,
   getShiftsAssignmentsFromDB,
+  getShiftsForWeekFromDB,
 } = require("../models/ShiftCRUD");
 
 async function addWeeklyShifts(req, res) {

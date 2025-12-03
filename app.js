@@ -8,8 +8,8 @@ const rolesRouter = require("./routes/roles");
 const workersRouter = require("./routes/worker");
 const shiftsRouter = require("./routes/shifts");
 const workerAssignmentsRouter = require("./routes/workerAssignments");
-const { loginCheck } = require("./auth/loggedInCheck");
-const { workerLoginCheck } = require("./auth/workerLoggedInCheck");
+const { loginCheck } = require("./middleware/loggedInCheck");
+const { workerLoginCheck } = require("./middleware/workerLoggedInCheck");
 
 const PORT = process.env.PORT || 3001;
 
@@ -31,6 +31,14 @@ app.use("/role", rolesRouter);
 app.use("/worker", workersRouter);
 app.use("/shift", shiftsRouter);
 app.use("/workerAssignments", workerAssignmentsRouter);
+
+const { computeOptimalAssignment } = require("./services/assignmentAlgorithm");
+app.get("/test/:user_id/:week_id", (req, res) => {
+  const { week_id, user_id } = req.params;
+  computeOptimalAssignment(user_id, week_id).then((assignment) => {
+    res.json(assignment);
+  });
+});
 
 // status route
 app.get("/status", loginCheck, (req, res) => {

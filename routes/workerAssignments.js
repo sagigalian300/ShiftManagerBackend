@@ -1,5 +1,5 @@
 const express = require("express");
-const { workerLoginCheck } = require("../auth/workerLoggedInCheck");
+const { workerLoginCheck } = require("../middleware/workerLoggedInCheck");
 const {
   getWeekToAssignTo,
   addWorkerSuggestedAssignment,
