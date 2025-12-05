@@ -10,8 +10,9 @@ const {
   getShiftsByDayIdFromDB,
   addShiftDataToDB,
   getShiftsAssignmentsFromDB,
-  getShiftsForWeekFromDB,
+  insertOptimalWeeklyShiftAssignmentsToDB,
 } = require("../models/ShiftCRUD");
+const { computeOptimalAssignment } = require("../services/assignmentAlgorithm");
 
 async function addWeeklyShifts(req, res) {
   const days = req.body;
@@ -32,7 +33,6 @@ async function addWeeklyShifts(req, res) {
 
 async function addShiftAssignments(req, res) {
   const shift_data = req.body;
-
   const result = await addShiftDataToDB(shift_data);
   if (!result.success) {
     res.status(500).json({ message: "Error adding shift data" });
@@ -88,6 +88,31 @@ async function getEncryptedBossAndWeek(req, res) {
   res.status(200).json({ encryptedWeek, encryptedBoss });
 }
 
+async function smartWeeklyShiftsBuilder(req, res) {
+  const week_id = req.params.week_id;
+  const user_id = req.userId.toString();
+  try {
+    const optimalAssignments = await computeOptimalAssignment(user_id, week_id);
+    const result = await insertOptimalWeeklyShiftAssignmentsToDB(
+      week_id,
+      optimalAssignments.assignments
+    );
+    if (!result.success) {
+      res
+        .status(500)
+        .json({ error: "Failed to insert optimal shift assignments." });
+      return;
+    }
+    res.status(200).json({
+      message: "Optimal shift assignments inserted successfully.",
+      details: optimalAssignments,
+    });
+  } catch (error) {
+    console.error("Error building weekly shifts:", error);
+    res.status(500).json({ error: "Failed to process shift assignments." });
+  }
+}
+
 module.exports = {
   addWeeklyShifts,
   getAllWeeks,
@@ -96,4 +121,5 @@ module.exports = {
   addShiftAssignments,
   getShiftAssignments,
   getEncryptedBossAndWeek,
+  smartWeeklyShiftsBuilder,
 };

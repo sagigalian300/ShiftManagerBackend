@@ -69,6 +69,14 @@ async function addShiftsToDB(days) {
   return true;
 }
 
+async function deleteAllShiftsAssignmentsByShiftIds(shiftIds) {
+  // shiftIds should be an array, e.g., [134, 135, 136]
+  return await supabase
+    .from("shift_assignments")
+    .delete()
+    .in("shift_id", shiftIds);
+}
+
 async function addShiftDataToDB(shift_data) {
   const { shift_id, shift_assignments } = shift_data;
 
@@ -83,10 +91,7 @@ async function addShiftDataToDB(shift_data) {
 
   try {
     // Start a transaction-like flow: delete old rows first
-    const deleteRes = await supabase
-      .from("shift_assignments")
-      .delete()
-      .eq("shift_id", shift_id);
+    const deleteRes = await deleteAllShiftsAssignmentsByShiftIds([shift_id]);
 
     if (deleteRes.error) {
       console.error("Error deleting old shift assignments:", deleteRes.error);
@@ -205,6 +210,54 @@ async function getShiftsForWeekFromDB(week_id) {
   return data;
 }
 
+/* 
+  This function will REMOVE all existing shift assignments for the given week_id
+  and INSERT the new optimal assignments provided.
+*/
+async function insertOptimalWeeklyShiftAssignmentsToDB(
+  week_id,
+  optimalAssignments
+) {
+  const shiftIds = [];
+  const recordsToInsert = Object.entries(optimalAssignments).flatMap(
+    ([key, assignmentsArray]) => {
+      const currentShiftId = parseInt(key);
+      shiftIds.push(currentShiftId);
+      return assignmentsArray
+        .filter(
+          (item) =>
+            item.worker_id != null &&
+            item.role_id != null &&
+            !isNaN(currentShiftId) // Check if shift_id is a valid number
+        )
+        .map((item) => ({
+          shift_id: currentShiftId,
+          role_id: item.role_id,
+          worker_id: item.worker_id,
+        }));
+    }
+  );
+  const deleteRes = await deleteAllShiftsAssignmentsByShiftIds(shiftIds);
+  if (deleteRes.error) {
+    console.error(
+      "Error deleting old shift assignments for week:",
+      deleteRes.error
+    );
+    return { success: false };
+  }
+  const insertRes = await supabase
+    .from("shift_assignments")
+    .insert(recordsToInsert);
+  if (insertRes.error) {
+    console.error(
+      "Error inserting optimal shift assignments:",
+      insertRes.error
+    );
+    return { success: false };
+  }
+  return { success: true };
+}
+
 module.exports = {
   addWeekToDB,
   getAllWeeksFromDB,
@@ -213,4 +266,5 @@ module.exports = {
   addShiftDataToDB,
   getShiftsAssignmentsFromDB,
   getShiftsForWeekFromDB,
+  insertOptimalWeeklyShiftAssignmentsToDB,
 };

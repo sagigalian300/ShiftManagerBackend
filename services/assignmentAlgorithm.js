@@ -245,7 +245,7 @@ async function computeOptimalAssignment(userId, weekId, options = {}) {
   for (const slots of Object.values(assignments)) {
     for (const s of slots) if (s.worker_id) stats.totalAssignedSlots++;
   }
-
+ 
   return { assignments, unfilled, stats, assignedShiftsByWorker };
 }
 

@@ -8,6 +8,7 @@ const {
   addShiftAssignments,
   getShiftAssignments,
   getEncryptedBossAndWeek,
+  smartWeeklyShiftsBuilder,
 } = require("../controllers/weeksController");
 const router = express.Router();
 
@@ -21,6 +22,11 @@ router.get(
   "/getEncryptedBossAndWeek/:week_id",
   loginCheck,
   getEncryptedBossAndWeek
+);
+router.get(
+  "/smartWeeklyShiftsBuilder/:week_id",
+  loginCheck,
+  smartWeeklyShiftsBuilder
 );
 
 module.exports = router;
