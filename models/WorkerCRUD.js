@@ -62,24 +62,44 @@ async function updateWorkerDetailsToDB(
   password,
   rank
 ) {
-  // 1) Update worker basic details
-  const { data, error } = await supabase
-    .from("workers")
-    .update({
-      first_name: firstName,
-      last_name: lastName,
-      email,
-      phone,
-      salary,
-      password,
-      rank,
-    })
-    .eq("id", worker_id)
-    .select();
+  let d = null,
+    e = null;
+  if (password) {
+    const { data, error } = await supabase
+      .from("workers")
+      .update({
+        first_name: firstName,
+        last_name: lastName,
+        email,
+        phone,
+        salary,
+        password,
+        rank,
+      })
+      .eq("id", worker_id)
+      .select();
+    d = data;
+    e = error;
+  } else {
+    const { data, error } = await supabase
+      .from("workers")
+      .update({
+        first_name: firstName,
+        last_name: lastName,
+        email,
+        phone,
+        salary,
+        rank,
+      })
+      .eq("id", worker_id)
+      .select();
+    d = data;
+    e = error;
+  }
 
-  if (error) {
-    console.log("Error updating worker:", error);
-    return { success: false, error };
+  if (e) {
+    console.log("Error updating worker:", e);
+    return { success: false, e };
   }
 
   // 2) Remove old roles

@@ -1,7 +1,4 @@
-const {
-  encrypt,
-  decrypt,
-} = require("../services/symmetricalEncryption/encryptor");
+const { encrypt } = require("../services/symmetricalEncryption/encryptor");
 
 const {
   addWeekToDB,
@@ -11,6 +8,7 @@ const {
   addShiftDataToDB,
   getShiftsAssignmentsFromDB,
   insertOptimalWeeklyShiftAssignmentsToDB,
+  getWeekDataForExcelDocumentFromDB,
 } = require("../models/ShiftCRUD");
 const { computeOptimalAssignment } = require("../services/assignmentAlgorithm");
 
@@ -113,6 +111,15 @@ async function smartWeeklyShiftsBuilder(req, res) {
   }
 }
 
+async function getWeekDataForExcelDocument(req, res) {
+  const week_id = req.params.week_id;
+  const result = await getWeekDataForExcelDocumentFromDB(week_id);
+  if (!result.success) {
+    res.status(500).json({ message: "Error fetching week data for Excel" });
+  }
+  res.status(200).json({ weekData: result.weekData });
+}
+
 module.exports = {
   addWeeklyShifts,
   getAllWeeks,
@@ -122,4 +129,5 @@ module.exports = {
   getShiftAssignments,
   getEncryptedBossAndWeek,
   smartWeeklyShiftsBuilder,
+  getWeekDataForExcelDocument,
 };

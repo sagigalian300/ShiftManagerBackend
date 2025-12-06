@@ -258,6 +258,33 @@ async function insertOptimalWeeklyShiftAssignmentsToDB(
   return { success: true };
 }
 
+async function getWeekDataForExcelDocumentFromDB(week_id) {
+  const { data, error } = await supabase
+    .from("weeks")
+    .select(
+      `
+      start_date,
+      days!inner (
+        date_name,
+        date,
+        shifts!inner (
+          start_time,
+          end_time,
+          type,
+          shift_assignments!inner (
+            roles (name),
+            workers (first_name, last_name)
+          )
+        )
+      )
+    `
+    )
+    .eq("id", week_id)
+    .order("date", { foreignTable: "days", ascending: true });
+
+  return { success: true, weekData: data[0] };
+}
+
 module.exports = {
   addWeekToDB,
   getAllWeeksFromDB,
@@ -267,4 +294,5 @@ module.exports = {
   getShiftsAssignmentsFromDB,
   getShiftsForWeekFromDB,
   insertOptimalWeeklyShiftAssignmentsToDB,
+  getWeekDataForExcelDocumentFromDB,
 };

@@ -42,7 +42,11 @@ async function updateWorkerDetails(req, res) {
     rank,
   } = req.body;
 
-  const hashedPassword = await hash(password);
+  let hashedPassword = null;
+  if (password.length > 0) {
+    hashedPassword = await hash(password);
+  }
+
   const result = await updateWorkerDetailsToDB(
     worker_id,
     first_name,
@@ -51,7 +55,7 @@ async function updateWorkerDetails(req, res) {
     phone,
     salary,
     roles,
-    hashedPassword,
+    hashedPassword ? hashedPassword : null,
     rank
   );
   res.json({ success: true, data: result.data });
@@ -102,6 +106,7 @@ async function workerLogin(req, res) {
   const week_id = decrypt(encrypted_week_id.toString());
 
   const result = await getWorkerByNameAndBossIdFromDB(name, boss_id);
+  console.log("Worker login result:", result);
   const passwordMatch = await verify(result.worker.password, password);
 
   if (!result.success || !passwordMatch) {
