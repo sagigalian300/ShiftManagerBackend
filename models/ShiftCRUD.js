@@ -168,9 +168,11 @@ async function getShiftsAssignmentsFromDB(shift_id) {
       role_id,
       workers:worker_id (
         id,
-        first_name,
         last_name,
-        email
+        email,
+        users!workers_id_fkey (
+          first_name: username
+        )
       )
     `
     )
@@ -181,14 +183,32 @@ async function getShiftsAssignmentsFromDB(shift_id) {
     return { success: false, shift_assignments: [] };
   }
 
-  // Group by role_id
+  // Group by role_id AND flatten the user data
   const grouped = res.data.reduce((acc, curr) => {
+    // 1. Flatten the Worker Object
+    // "curr.workers" contains the nested "users" object. We need to unwrap it.
+    const rawWorker = curr.workers;
+
+    // Safety check: if worker is null (e.g. deleted), skip or handle gracefully
+    if (!rawWorker) return acc;
+
+    const flatWorker = {
+      id: rawWorker.id,
+      last_name: rawWorker.last_name,
+      email: rawWorker.email,
+      // Pull the name from the nested 'users' object
+      first_name: rawWorker.users?.first_name || "Unknown",
+    };
+
+    // 2. Grouping Logic
     const roleEntry = acc.find((r) => r.role_id === curr.role_id);
+
     if (roleEntry) {
-      roleEntry.workers.push(curr.workers);
+      roleEntry.workers.push(flatWorker);
     } else {
-      acc.push({ role_id: curr.role_id, workers: [curr.workers] });
+      acc.push({ role_id: curr.role_id, workers: [flatWorker] });
     }
+
     return acc;
   }, []);
 
@@ -273,7 +293,12 @@ async function getWeekDataForExcelDocumentFromDB(week_id) {
           type,
           shift_assignments!inner (
             roles (name),
-            workers (first_name, last_name)
+            workers (
+              last_name,
+              users!workers_id_fkey (
+                first_name: username
+              )
+            )
           )
         )
       )
@@ -282,7 +307,41 @@ async function getWeekDataForExcelDocumentFromDB(week_id) {
     .eq("id", week_id)
     .order("date", { foreignTable: "days", ascending: true });
 
-  return { success: true, weekData: data[0] };
+  if (error) {
+    console.error("Error fetching week data:", error);
+    return { success: false, error };
+  }
+
+  // If no week found, return early
+  if (!data || data.length === 0) {
+    return { success: false, error: "Week not found" };
+  }
+
+  const weekData = data[0];
+
+  // --- DEEP FLATTENING ---
+  // We need to drill down into days -> shifts -> assignments to fix the worker object
+  if (weekData.days) {
+    weekData.days.forEach((day) => {
+      if (day.shifts) {
+        day.shifts.forEach((shift) => {
+          if (shift.shift_assignments) {
+            shift.shift_assignments.forEach((assignment) => {
+              const worker = assignment.workers;
+              if (worker) {
+                // Flatten the name
+                worker.first_name = worker.users?.first_name || "Unknown";
+                // Remove the nested object
+                delete worker.users;
+              }
+            });
+          }
+        });
+      }
+    });
+  }
+
+  return { success: true, weekData };
 }
 
 module.exports = {

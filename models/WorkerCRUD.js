@@ -2,13 +2,12 @@ const { Hasher } = require("../services/symmetricalEncryption/encryptor");
 const supabase = require("../supabase");
 
 async function addWorkerToDB(
-  firstName,
+  userId,
   lastName,
   email,
   phone,
   salary,
   roles,
-  password,
   rank,
   bossId
 ) {
@@ -16,12 +15,11 @@ async function addWorkerToDB(
     .from("workers")
     .insert([
       {
-        first_name: firstName,
+        id: userId,
         last_name: lastName,
         email,
         phone,
         salary,
-        password,
         rank,
         boss_id: bossId,
       },
@@ -52,54 +50,75 @@ async function addWorkerToDB(
 }
 
 async function updateWorkerDetailsToDB(
+  userId,
   worker_id,
-  firstName,
   lastName,
   email,
   phone,
   salary,
   roles,
-  password,
-  rank
+  rank,
+  first_name,
+  hashedPassword
 ) {
-  let d = null,
-    e = null;
-  if (password) {
-    const { data, error } = await supabase
-      .from("workers")
-      .update({
-        first_name: firstName,
-        last_name: lastName,
-        email,
-        phone,
-        salary,
-        password,
-        rank,
-      })
-      .eq("id", worker_id)
-      .select();
-    d = data;
-    e = error;
-  } else {
-    const { data, error } = await supabase
-      .from("workers")
-      .update({
-        first_name: firstName,
-        last_name: lastName,
-        email,
-        phone,
-        salary,
-        rank,
-      })
-      .eq("id", worker_id)
-      .select();
-    d = data;
-    e = error;
+  // STEP 1: Verify Ownership & Get the User ID
+  // We check: Does this worker exist? AND Does this boss own them?
+  const { data: workerData, error: fetchError } = await supabase
+    .from("workers")
+    .select("id") // We need the id to delete the account
+    .eq("id", worker_id) // The worker to delete
+    .eq("boss_id", userId) // SECURITY: Only find if boss matches
+    .single();
+
+  if (fetchError || !workerData) {
+    console.error("Delete failed: Worker not found or unauthorized.");
+    return {
+      success: false,
+      error: "Worker not found or you do not have permission.",
+    };
   }
 
+  // update in user table
+  const targetUserId = workerData.id;
+  let e = null;
+  if (hashedPassword) {
+    const { _, error: userUpdateError } = await supabase
+      .from("users")
+      .update({
+        username: first_name,
+        password: hashedPassword,
+      })
+      .eq("id", targetUserId);
+    e = userUpdateError;
+  } else {
+    const { _, error: userUpdateError } = await supabase
+      .from("users")
+      .update({
+        username: first_name,
+      })
+      .eq("id", targetUserId);
+    e = userUpdateError;
+  }
   if (e) {
-    console.log("Error updating worker:", e);
-    return { success: false, e };
+    console.log("Error updating user details:", e);
+    return { success: false, error: e };
+  }
+
+  // update in worker table
+  const { data, error } = await supabase
+    .from("workers")
+    .update({
+      last_name: lastName,
+      email,
+      phone,
+      salary,
+      rank,
+    })
+    .eq("id", targetUserId);
+
+  if (error) {
+    console.log("Error updating worker:", error);
+    return { success: false, error };
   }
 
   // 2) Remove old roles
@@ -134,6 +153,9 @@ async function getAllWorkersFromDB(userId) {
     .select(
       `
       *,
+      users!workers_id_fkey (
+        first_name: username
+      ),
       worker_roles (
         roles (
           id,
@@ -150,44 +172,102 @@ async function getAllWorkersFromDB(userId) {
     return { success: false, error };
   }
 
-  // Transform the data to have a "roles" array directly in the worker object
-  const transformed = data.map((worker) => ({
-    ...worker,
-    roles: worker.worker_roles.map((wr) => wr.roles),
-  }));
+  // --- THIS IS THE FIX ---
+  const transformed = data.map((worker) => {
+    return {
+      // 1. Spread the existing worker fields (id, last_name, salary...)
+      ...worker,
+
+      // 2. FLATTEN: Pull 'first_name' out of the 'users' object
+      // We use optional chaining (?.) in case 'users' is null
+      first_name: worker.users?.first_name || "Unknown",
+
+      // 3. FLATTEN: Fix the roles array while we are here
+      roles: worker.worker_roles.map((wr) => wr.roles),
+
+      // 4. CLEANUP: Remove the nested objects so they don't clutter your response
+      users: undefined,
+      worker_roles: undefined,
+    };
+  });
 
   return { success: true, data: transformed };
 }
 
-async function deleteWorkerFromDB(workerId) {
-  // Database automatically handles deletion in worker_roles and shift_assignments
-  const { data, error } = await supabase
+async function deleteWorkerFromDB(workerId, bossId) {
+  // STEP 1: Verify Ownership & Get the User ID
+  // We check: Does this worker exist? AND Does this boss own them?
+  const { data: workerData, error: fetchError } = await supabase
     .from("workers")
-    .delete()
-    .eq("id", workerId);
+    .select("id") // We need the id to delete the account
+    .eq("id", workerId) // The worker to delete
+    .eq("boss_id", bossId) // SECURITY: Only find if boss matches
+    .single();
 
-  if (error) {
-    console.error("Error deleting worker:", error);
-    return { success: false, error };
+  if (fetchError || !workerData) {
+    console.error("Delete failed: Worker not found or unauthorized.");
+    return {
+      success: false,
+      error: "Worker not found or you do not have permission.",
+    };
   }
-  return { success: true, data: "Worker successfully deleted" };
+
+  const targetUserId = workerData.id;
+
+  // STEP 2: Delete the USER (The Parent)
+  // Because you set up Foreign Keys with 'ON DELETE CASCADE',
+  // deleting the User will automatically delete the Worker profile.
+  const { error: deleteError } = await supabase
+    .from("users")
+    .delete()
+    .eq("id", targetUserId);
+
+  if (deleteError) {
+    console.error("Error deleting user:", deleteError);
+    return { success: false, error: deleteError };
+  }
+
+  return { success: true, data: "Worker account deleted successfully" };
 }
 
 async function getWorkerByNameAndBossIdFromDB(name, boss_id) {
-  const { data, error } = await supabase.from("workers").select().match({
-    first_name: name,
-    boss_id,
-  });
+  const { data, error } = await supabase
+    .from("workers")
+    .select(
+      `
+      *,
+      users!workers_id_fkey!inner (
+        first_name: username,
+        password
+      )
+    `
+    )
+    .eq("boss_id", boss_id)
+    .eq("users.username", name);
 
   if (error) {
     console.log("Error logging in worker:", error);
     return { success: false, error };
   }
-  if (data.length === 0) {
+  if (!data || data.length === 0) {
     return { success: false, worker: null, error: "Invalid credentials" };
   }
 
-  return { success: true, worker: data[0] };
+  // --- FLATTENING LOGIC ---
+  const rawWorker = data[0];
+
+  const flattenedWorker = {
+    ...rawWorker, // 1. Spread the worker fields (id, last_name, salary...)
+
+    // 2. Extract fields from the 'users' object
+    first_name: rawWorker.users?.first_name,
+    password: rawWorker.users?.password,
+
+    // 3. Remove the nested 'users' object so it doesn't appear in the output
+    users: undefined,
+  };
+
+  return { success: true, worker: flattenedWorker };
 }
 
 async function getWorkerRolesFromDB(userId) {
@@ -221,7 +301,14 @@ async function getWorkerRolesFromDB(userId) {
 async function getWorkerNameById(workerId) {
   const { data, error } = await supabase
     .from("workers")
-    .select("first_name, last_name")
+    .select(
+      `
+      last_name,
+      users!workers_id_fkey (
+        first_name: username
+      )
+    `
+    )
     .eq("id", workerId)
     .single();
 
@@ -230,7 +317,14 @@ async function getWorkerNameById(workerId) {
     return { success: false, error };
   }
 
-  return { success: true, data };
+  // --- FLATTENING LOGIC ---
+  // Since .single() returns one object (not an array), we just create a new clean object.
+  const flattenedData = {
+    last_name: data.last_name,
+    first_name: data.users?.first_name || "Unknown",
+  };
+
+  return { success: true, data: flattenedData };
 }
 
 module.exports = {

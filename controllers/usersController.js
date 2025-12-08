@@ -1,4 +1,4 @@
-  const jwt = require("jsonwebtoken");
+const jwt = require("jsonwebtoken");
 const {
   getAllUsersFromDB,
   getUserByUsername,
@@ -20,7 +20,13 @@ async function register(req, res) {
     }
     // check whether this is the first user ever => make admin
     const userCount = await getUserCountFromDB();
-    const isFirstUser = userCount === 0;
+    let roles = [];
+
+    if (userCount === 0) {
+      roles = ["admin", "boss"];
+    } else {
+      roles = ["boss"];
+    }
 
     const existingUser = await getUserByUsername(username);
     if (existingUser.user) {
@@ -30,7 +36,7 @@ async function register(req, res) {
       });
     }
     const hashedPassword = await hash(password);
-    const success = await createUserInDB(username, hashedPassword, isFirstUser);
+    const success = await createUserInDB(username, hashedPassword, roles);
     return res.status(201).json({
       success,
       message: "User registered successfully.",

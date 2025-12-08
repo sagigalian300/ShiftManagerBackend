@@ -8,6 +8,7 @@ const {
   getWorkerByNameAndBossIdFromDB,
 } = require("../models/WorkerCRUD");
 const { hash, verify } = require("../services/hasher");
+const { createUserInDB } = require("../models/UserCRUD");
 
 async function addWorker(req, res) {
   const { firstName, lastName, email, phone, salary, roles, password, rank } =
@@ -15,14 +16,23 @@ async function addWorker(req, res) {
   const hashedPassword = await hash(password);
   const bossId = req.userId;
 
+  const { success, userId } = await createUserInDB(firstName, hashedPassword, [
+    "worker",
+  ]);
+  if (!success) {
+    return res.status(500).json({
+      success: false,
+      message: "Error creating worker (user) account.",
+    });
+  }
+
   const result = await addWorkerToDB(
-    firstName,
+    userId,
     lastName,
     email,
     phone,
     salary,
     roles,
-    hashedPassword,
     rank,
     bossId
   );
@@ -30,6 +40,8 @@ async function addWorker(req, res) {
 }
 
 async function updateWorkerDetails(req, res) {
+  const userId = req.userId;
+
   const {
     worker_id,
     first_name,
@@ -48,15 +60,16 @@ async function updateWorkerDetails(req, res) {
   }
 
   const result = await updateWorkerDetailsToDB(
+    userId,
     worker_id,
-    first_name,
     last_name,
     email,
     phone,
     salary,
     roles,
-    hashedPassword ? hashedPassword : null,
-    rank
+    rank,
+    first_name,
+    hashedPassword
   );
   res.json({ success: true, data: result.data });
 }
@@ -70,6 +83,7 @@ async function getAllWorkers(req, res) {
 
 async function deleteWorker(req, res) {
   const workerId = req.params.workerId;
+  const userId = req.userId;
 
   if (!workerId) {
     return res
@@ -77,7 +91,7 @@ async function deleteWorker(req, res) {
       .json({ success: false, message: "Worker ID is required." });
   }
 
-  const result = await deleteWorkerFromDB(workerId);
+  const result = await deleteWorkerFromDB(Number(workerId), userId);
 
   // 2. Implement proper error handling based on the result from DB function
   if (!result.success) {

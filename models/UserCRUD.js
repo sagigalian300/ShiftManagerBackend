@@ -1,20 +1,24 @@
 const supabase = require("../supabase");
 
-async function createUserInDB(username, hashedPassword, isAdmin = false) {
-  const { data, error } = await supabase.from("users").insert([
-    {
-      username,
-      password: hashedPassword,
-      is_admin: isAdmin,
-    },
-  ]);
+async function createUserInDB(username, hashedPassword, roles) {
+  const { data, error } = await supabase
+    .from("users")
+    .insert([
+      {
+        username,
+        password: hashedPassword,
+        roles,
+      },
+    ])
+    .select();
+  const userId = data[0].id;
 
   if (error) {
     console.error("Error creating user:", error);
     return null;
   }
 
-  return { success: true };
+  return { success: true, userId };
 }
 
 async function getUserCountFromDB() {
@@ -46,6 +50,9 @@ async function getUserByUsername(username) {
   }
   return { user: data[0] };
 }
+
+
+
 module.exports = {
   getAllUsersFromDB,
   getUserByUsername,
