@@ -14,7 +14,7 @@ async function addWorker(req, res) {
   const { firstName, lastName, email, phone, salary, roles, password, rank } =
     req.body;
   const hashedPassword = await hash(password);
-  const bossId = req.userId;
+  const bossId = req.user.userId;
 
   const { success, userId } = await createUserInDB(firstName, hashedPassword, [
     "worker",
@@ -40,7 +40,7 @@ async function addWorker(req, res) {
 }
 
 async function updateWorkerDetails(req, res) {
-  const userId = req.userId;
+  const userId = req.user.userId;
 
   const {
     worker_id,
@@ -75,7 +75,7 @@ async function updateWorkerDetails(req, res) {
 }
 
 async function getAllWorkers(req, res) {
-  const userId = req.userId;
+  const userId = req.user.userId;
 
   const result = await getAllWorkersFromDB(userId);
   res.json({ success: true, data: result.data });
@@ -83,7 +83,7 @@ async function getAllWorkers(req, res) {
 
 async function deleteWorker(req, res) {
   const workerId = req.params.workerId;
-  const userId = req.userId;
+  const userId = req.user.userId;
 
   if (!workerId) {
     return res
@@ -120,10 +120,14 @@ async function workerLogin(req, res) {
   const week_id = decrypt(encrypted_week_id.toString());
 
   const result = await getWorkerByNameAndBossIdFromDB(name, boss_id);
-  console.log("Worker login result:", result);
+  // console.log("Worker login result:", result);
+  if (!result.success) {
+    return res.json({ success: false, message: "Invalid credentials." });
+  }
+
   const passwordMatch = await verify(result.worker.password, password);
 
-  if (!result.success || !passwordMatch) {
+  if (!passwordMatch) {
     return res.json({ success: false, message: "Invalid credentials." });
   }
 
@@ -133,13 +137,20 @@ async function workerLogin(req, res) {
       workerId: result.worker.id,
       bossId: result.worker.boss_id,
       weekId: week_id,
+      roles: result.worker.roles,
     },
     JWT_SECRET,
     { expiresIn: "1h" }
   );
-  res.cookie("worker_auth_token", worker_token, { httpOnly: true });
-
-  res.json({ success: true, message: "successfully worker login" });
+  res
+    .cookie("auth_token", worker_token, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "none",
+      path: "/",
+      maxAge: 1000 * 60 * 60 * 1, // Matches JWT expiration (1 hour)
+    })
+    .json({ success: true, message: "successfully worker login" });
 }
 
 module.exports = {

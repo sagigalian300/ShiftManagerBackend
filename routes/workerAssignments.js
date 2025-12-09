@@ -1,16 +1,23 @@
 const express = require("express");
-const { workerLoginCheck } = require("../middleware/workerLoggedInCheck");
-
+// const { workerLoginCheck } = require("../middleware/workerLoggedInCheck");
+const { authorize } = require("../middleware/authorization");
+const { authenticate } = require("../middleware/authentication");
 const {
   getWeekToAssignTo,
   addWorkerSuggestedAssignment,
 } = require("../controllers/workerAssignmentsController");
 const router = express.Router();
 
-router.get("/getWeekToAssignTo", workerLoginCheck, getWeekToAssignTo);
+router.get(
+  "/getWeekToAssignTo",
+  authenticate,
+  authorize(["worker"]),
+  getWeekToAssignTo
+);
 router.post(
   "/addWorkerSuggestedAssignment",
-  workerLoginCheck,
+  authenticate,
+  authorize(["worker"]),
   addWorkerSuggestedAssignment
 );
 

@@ -1,4 +1,6 @@
-const { loginCheck } = require("../middleware/loggedInCheck");
+// const { loginCheck } = require("../middleware/loggedInCheck");
+const { authorize } = require("../middleware/authorization");
+const { authenticate } = require("../middleware/authentication");
 const express = require("express");
 const {
   addWeeklyShifts,
@@ -14,25 +16,33 @@ const {
 
 const router = express.Router();
 
-router.post("/addWeeklyShifts", loginCheck, addWeeklyShifts);
-router.post("/addShiftAssignments", loginCheck, addShiftAssignments);
-router.get("/getAllWeeks", loginCheck, getAllWeeks);
-router.get("/getDaysByWeekId/:week_id", loginCheck, getDaysByWeekId);
-router.get("/getShiftsByDayId/:day_id", loginCheck, getShiftsByDayId);
-router.get("/getShiftAssignments/:shift_id", loginCheck, getShiftAssignments);
+router.post("/addWeeklyShifts", authenticate, authorize(["boss"]), addWeeklyShifts);
+router.post("/addShiftAssignments", authenticate, authorize(["boss"]), addShiftAssignments);
+router.get("/getAllWeeks", authenticate, authorize(["boss"]), getAllWeeks);
+router.get("/getDaysByWeekId/:week_id", authenticate, authorize(["boss"]), getDaysByWeekId);
+router.get("/getShiftsByDayId/:day_id", authenticate, authorize(["boss"]), getShiftsByDayId);
+router.get(
+  "/getShiftAssignments/:shift_id",
+  authenticate,
+  authorize(["boss"]),
+  getShiftAssignments
+);
 router.get(
   "/getEncryptedBossAndWeek/:week_id",
-  loginCheck,
+  authenticate,
+  authorize(["boss"]),
   getEncryptedBossAndWeek
 );
 router.get(
   "/smartWeeklyShiftsBuilder/:week_id",
-  loginCheck,
+  authenticate,
+  authorize(["boss"]),
   smartWeeklyShiftsBuilder
 );
 router.get(
   "/getWeekDataForExcelDocument/:week_id",
-  loginCheck,
+  authenticate,
+  authorize(["boss"]),
   getWeekDataForExcelDocument
 );
 

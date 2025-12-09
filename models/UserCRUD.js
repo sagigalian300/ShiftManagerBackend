@@ -40,7 +40,7 @@ async function getAllUsersFromDB() {
 async function getUserByUsername(username) {
   const { data, error } = await supabase
     .from("users")
-    .select("id, username, password")
+    .select("*")
     .eq("username", username)
     .limit(1);
 

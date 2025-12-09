@@ -238,7 +238,8 @@ async function getWorkerByNameAndBossIdFromDB(name, boss_id) {
       *,
       users!workers_id_fkey!inner (
         first_name: username,
-        password
+        password,
+        roles
       )
     `
     )
@@ -247,7 +248,7 @@ async function getWorkerByNameAndBossIdFromDB(name, boss_id) {
 
   if (error) {
     console.log("Error logging in worker:", error);
-    return { success: false, error };
+    return { success: false, worker: null, error };
   }
   if (!data || data.length === 0) {
     return { success: false, worker: null, error: "Invalid credentials" };
@@ -257,14 +258,10 @@ async function getWorkerByNameAndBossIdFromDB(name, boss_id) {
   const rawWorker = data[0];
 
   const flattenedWorker = {
-    ...rawWorker, // 1. Spread the worker fields (id, last_name, salary...)
-
-    // 2. Extract fields from the 'users' object
+    ...rawWorker,
     first_name: rawWorker.users?.first_name,
     password: rawWorker.users?.password,
-
-    // 3. Remove the nested 'users' object so it doesn't appear in the output
-    users: undefined,
+    roles: rawWorker.users?.roles,
   };
 
   return { success: true, worker: flattenedWorker };

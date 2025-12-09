@@ -1,4 +1,6 @@
-const { loginCheck } = require("../middleware/loggedInCheck");
+// const { loginCheck } = require("../middleware/loggedInCheck");
+const { authorize } = require("../middleware/authorization");
+const { authenticate } = require("../middleware/authentication");
 const {
   addRole,
   getAllRoles,
@@ -8,8 +10,8 @@ const {
 const express = require("express");
 const router = express.Router();
 
-router.post("/addRole", loginCheck, addRole);
-router.get("/getAllRoles", loginCheck, getAllRoles);
-router.delete("/deleteRole/:roleId", loginCheck, deleteRole);
+router.post("/addRole", authenticate, authorize(["boss"]), addRole);
+router.get("/getAllRoles", authenticate, authorize(["boss"]), getAllRoles);
+router.delete("/deleteRole/:roleId", authenticate, authorize(["boss"]), deleteRole);
 
 module.exports = router;

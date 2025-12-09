@@ -8,9 +8,7 @@ const rolesRouter = require("./routes/roles");
 const workersRouter = require("./routes/worker");
 const shiftsRouter = require("./routes/shifts");
 const workerAssignmentsRouter = require("./routes/workerAssignments");
-const { loginCheck } = require("./middleware/loggedInCheck");
-const { workerLoginCheck } = require("./middleware/workerLoggedInCheck");
-
+const { authenticate } = require("./middleware/authentication");
 const PORT = process.env.PORT || 3001;
 
 const app = express();
@@ -41,12 +39,12 @@ app.get("/test/:user_id/:week_id", (req, res) => {
 });
 
 // status route
-app.get("/status", loginCheck, (req, res) => {
-  res.status(200).send("Valid Token");
-});
-
-app.get("/worker-status", workerLoginCheck, (req, res) => {
-  res.status(200).send("Worker route is operational");
+app.get("/status", authenticate, (req, res) => {
+  // req.user was populated by your 'authenticate' middleware
+  res.status(200).json({ 
+    success: true, 
+    roles: req.user.roles || [] // e.g., ["worker"] or ["boss", "admin"]
+  });
 });
 
 // Start server

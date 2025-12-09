@@ -14,7 +14,7 @@ const { computeOptimalAssignment } = require("../services/assignmentAlgorithm");
 
 async function addWeeklyShifts(req, res) {
   const days = req.body;
-  const userId = req.userId;
+  const userId = req.user.userId;
 
   //   console.log(days);
   const result = await addWeekToDB(days, userId);
@@ -41,7 +41,7 @@ async function addShiftAssignments(req, res) {
 }
 
 async function getAllWeeks(req, res) {
-  const userId = req.userId;
+  const userId = req.user.userId;
 
   const result = await getAllWeeksFromDB(userId);
   if (!result.success) {
@@ -79,7 +79,7 @@ async function getShiftAssignments(req, res) {
 
 async function getEncryptedBossAndWeek(req, res) {
   const week_id = req.params.week_id.toString();
-  const userId = req.userId.toString();
+  const userId = req.user.userId.toString();
 
   const encryptedWeek = encrypt(week_id);
   const encryptedBoss = encrypt(userId);
@@ -88,7 +88,7 @@ async function getEncryptedBossAndWeek(req, res) {
 
 async function smartWeeklyShiftsBuilder(req, res) {
   const week_id = req.params.week_id;
-  const user_id = req.userId.toString();
+  const user_id = req.user.userId.toString();
   try {
     const optimalAssignments = await computeOptimalAssignment(user_id, week_id);
     const result = await insertOptimalWeeklyShiftAssignmentsToDB(

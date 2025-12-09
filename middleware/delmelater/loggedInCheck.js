@@ -15,6 +15,7 @@ async function loginCheck(req, res, next) {
     const decoded = jwt.verify(token, JWT_SECRET);
     // Attach the userId to the request object for use in subsequent handlers
     req.userId = decoded.userId;
+    console.log("Decoded roles:", decoded.roles);
     next();
   } catch (err) {
     return res.status(401).json({
@@ -24,5 +25,5 @@ async function loginCheck(req, res, next) {
   }
 }
 module.exports = {
-  loginCheck, 
+  loginCheck,
 };

@@ -91,6 +91,7 @@ async function login(req, res) {
     // Create the payload (what stored in the token)
     const payload = {
       userId: user.id,
+      roles: user.roles,
     };
     // Sign the token
     const token = jwt.sign(payload, JWT_SECRET, {

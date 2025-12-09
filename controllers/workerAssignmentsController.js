@@ -5,8 +5,8 @@ const {
 const { getWorkerNameById } = require("../models/WorkerCRUD");
 
 async function getWeekToAssignTo(req, res) {
-  const weekId = req.weekId;
-  const workerId = req.workerId;
+  const weekId = req.user.weekId;
+  const workerId = req.user.workerId;
 
   const resultName = await getWorkerNameById(workerId);
   const workerName =
@@ -22,7 +22,7 @@ async function getWeekToAssignTo(req, res) {
 
 async function addWorkerSuggestedAssignment(req, res) {
   const { suggestion } = req.body;
-  const workerId = req.workerId;
+  const workerId = req.user.workerId;
 
   const result = await addWorkerSuggestedAssignmentToDB(suggestion, workerId);
   if (!result.success) {

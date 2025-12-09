@@ -1,4 +1,7 @@
-const { loginCheck } = require("../middleware/loggedInCheck");
+// const { loginCheck } = require("../middleware/loggedInCheck");
+const { authorize } = require("../middleware/authorization");
+const { authenticate } = require("../middleware/authentication");
+
 const {
   addWorker,
   getAllWorkers,
@@ -11,9 +14,8 @@ const express = require("express");
 const router = express.Router();
 
 router.post("/workerLogin", workerLogin);
-router.post("/addWorker", loginCheck, addWorker);
-router.post("/updateWorkerDetails", loginCheck, updateWorkerDetails);
-router.get("/getAllWorkers", loginCheck, getAllWorkers);
-router.delete("/deleteWorker/:workerId", loginCheck, deleteWorker);
-
+router.post("/addWorker", authenticate, authorize(["boss"]), addWorker);
+router.post("/updateWorkerDetails", authenticate, authorize(["boss"]), updateWorkerDetails);
+router.get("/getAllWorkers", authenticate, authorize(["boss"]), getAllWorkers);
+router.delete("/deleteWorker/:workerId", authenticate, authorize(["boss"]), deleteWorker);
 module.exports = router;
