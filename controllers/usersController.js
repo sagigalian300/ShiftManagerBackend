@@ -1,6 +1,5 @@
 const jwt = require("jsonwebtoken");
 const {
-  getAllUsersFromDB,
   getUserByUsername,
   getUserCountFromDB,
   createUserInDB,
@@ -115,15 +114,8 @@ async function login(req, res) {
   }
 }
 
-async function getAllUsers(req, res) {
-  const result = await getAllUsersFromDB();
-  console.log(result.data);
-  res.json({ success: true, data: result.data });
-}
-
 module.exports = {
   login,
-  getAllUsers,
   logout,
   register,
 };

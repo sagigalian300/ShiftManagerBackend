@@ -11,14 +11,24 @@ const { hash, verify } = require("../services/hasher");
 const { createUserInDB } = require("../models/UserCRUD");
 
 async function addWorker(req, res) {
-  const { firstName, lastName, email, phone, salary, roles, password, rank } =
-    req.body;
+  const {
+    firstName,
+    lastName,
+    email,
+    phone,
+    salary,
+    roles,
+    password,
+    rank,
+  } = req.body;
   const hashedPassword = await hash(password);
   const bossId = req.user.userId;
 
-  const { success, userId } = await createUserInDB(firstName, hashedPassword, [
-    "worker",
-  ]);
+  const { success, userId } = await createUserInDB(
+    firstName,
+    hashedPassword,
+    ["worker"]
+  );
   if (!success) {
     return res.status(500).json({
       success: false,

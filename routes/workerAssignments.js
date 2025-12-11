@@ -14,11 +14,6 @@ router.get(
   authorize(["worker"]),
   getWeekToAssignTo
 );
-router.post(
-  "/addWorkerSuggestedAssignment",
-  authenticate,
-  authorize(["worker"]),
-  addWorkerSuggestedAssignment
-);
+router.post("/addWorkerSuggestedAssignment", authenticate, authorize(["worker"]), addWorkerSuggestedAssignment);
 
 module.exports = router;

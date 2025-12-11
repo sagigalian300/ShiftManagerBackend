@@ -33,10 +33,6 @@ async function getUserCountFromDB() {
   return count;
 }
 
-async function getAllUsersFromDB() {
-  return await supabase.from("users").select("*");
-}
-
 async function getUserByUsername(username) {
   const { data, error } = await supabase
     .from("users")
@@ -51,10 +47,7 @@ async function getUserByUsername(username) {
   return { user: data[0] };
 }
 
-
-
 module.exports = {
-  getAllUsersFromDB,
   getUserByUsername,
   getUserCountFromDB,
   createUserInDB,
