@@ -19,17 +19,22 @@ const app = express();
 // Middleware
 app.use(express.json());
 app.use(cookieParser());
-app.use(
-  cors({
-    origin: [
-      "http://localhost:3000",
-      "https://shift-manager-q8f4.vercel.app",
-      "https://shift-manager-q8f4-git-main-sagis-projects-b135c1d1.vercel.app",
-      "https://shift-manager-q8f4-li8r4qzwb-sagis-projects-b135c1d1.vercel.app",
-    ],
-    credentials: true,
-  })
-);
+
+const corsOptions = {
+  origin: [
+    "http://localhost:3000",
+    "https://shift-manager-q8f4.vercel.app",
+    "https://shift-manager-q8f4-git-main-sagis-projects-b135c1d1.vercel.app",
+    "https://shift-manager-q8f4-li8r4qzwb-sagis-projects-b135c1d1.vercel.app",
+  ],
+  allowedHeaders: ["Content-Type"],
+  exposedHeaders: ["Access-Control-Allow-Origin"],
+  methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+  preflightContinue: false,
+  optionsSuccessStatus: 204,
+  credentials: true,
+};
+app.use(cors(corsOptions));
 
 // Routes
 app.use("/user", usersRouter);
