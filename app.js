@@ -12,7 +12,8 @@ const workerAssignmentsRouter = require("./routes/workerAssignments");
 const adminRouter = require("./routes/admin");
 
 const { authenticate } = require("./middleware/authentication");
-const PORT = process.env.PORT || 3001;
+const PORT = 8080 || process.env.PORT;
+// const PORT = process.env.PORT || 3001;
 
 const app = express();
 
