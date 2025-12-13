@@ -23,6 +23,15 @@ async function addWeekToDB(days, userId) {
   return { success: true, week_id };
 }
 
+async function deleteWeekFromDB(week_id) {
+  const res = await supabase.from("weeks").delete().eq("id", week_id);
+  if (res.error) {
+    console.error("Error deleting week:", res.error);
+    return { success: false };
+  }
+  return { success: true };
+}
+
 async function addDaysToDB(week_id, days) {
   const daysToInsert = days.map((day) => ({
     week_id,
@@ -346,6 +355,7 @@ async function getWeekDataForExcelDocumentFromDB(week_id) {
 
 module.exports = {
   addWeekToDB,
+  deleteWeekFromDB,
   getAllWeeksFromDB,
   getDaysByWeekIdFromDB,
   getShiftsByDayIdFromDB,

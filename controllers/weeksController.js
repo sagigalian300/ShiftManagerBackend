@@ -2,6 +2,7 @@ const { encrypt } = require("../services/symmetricalEncryption/encryptor");
 
 const {
   addWeekToDB,
+  deleteWeekFromDB,
   getAllWeeksFromDB,
   getDaysByWeekIdFromDB,
   getShiftsByDayIdFromDB,
@@ -26,6 +27,17 @@ async function addWeeklyShifts(req, res) {
   res.status(200).json({
     message: "Weekly shifts added successfully",
     week_id: result.week_id,
+  });
+}
+
+async function deleteWeek(req, res) {
+  const week_id = req.params.week_id;
+  const result = await deleteWeekFromDB(week_id);
+  if (!result.success) {
+    res.status(500).json({ message: "Error deleting week" });
+  }
+  res.status(200).json({
+    message: "Week deleted successfully",
   });
 }
 
@@ -122,6 +134,7 @@ async function getWeekDataForExcelDocument(req, res) {
 
 module.exports = {
   addWeeklyShifts,
+  deleteWeek,
   getAllWeeks,
   getDaysByWeekId,
   getShiftsByDayId,

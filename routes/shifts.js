@@ -12,15 +12,42 @@ const {
   getEncryptedBossAndWeek,
   smartWeeklyShiftsBuilder,
   getWeekDataForExcelDocument,
+  deleteWeek,
 } = require("../controllers/weeksController");
 
 const router = express.Router();
 
-router.post("/addWeeklyShifts", authenticate, authorize(["boss"]), addWeeklyShifts);
-router.post("/addShiftAssignments", authenticate, authorize(["boss"]), addShiftAssignments);
+router.post(
+  "/addWeeklyShifts",
+  authenticate,
+  authorize(["boss"]),
+  addWeeklyShifts
+);
+router.delete(
+  "/deleteWeek/:week_id",
+  authenticate,
+  authorize(["boss"]),
+  deleteWeek
+);
+router.post(
+  "/addShiftAssignments",
+  authenticate,
+  authorize(["boss"]),
+  addShiftAssignments
+);
 router.get("/getAllWeeks", authenticate, authorize(["boss"]), getAllWeeks);
-router.get("/getDaysByWeekId/:week_id", authenticate, authorize(["boss"]), getDaysByWeekId);
-router.get("/getShiftsByDayId/:day_id", authenticate, authorize(["boss"]), getShiftsByDayId);
+router.get(
+  "/getDaysByWeekId/:week_id",
+  authenticate,
+  authorize(["boss"]),
+  getDaysByWeekId
+);
+router.get(
+  "/getShiftsByDayId/:day_id",
+  authenticate,
+  authorize(["boss"]),
+  getShiftsByDayId
+);
 router.get(
   "/getShiftAssignments/:shift_id",
   authenticate,
