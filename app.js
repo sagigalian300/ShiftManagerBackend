@@ -21,7 +21,12 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(
   cors({
-    origin: "http://localhost:3000",
+    origin: [
+      "http://localhost:3000",
+      "https://shift-manager-q8f4.vercel.app",
+      "https://shift-manager-q8f4-git-main-sagis-projects-b135c1d1.vercel.app",
+      "https://shift-manager-q8f4-li8r4qzwb-sagis-projects-b135c1d1.vercel.app",
+    ],
     credentials: true,
   })
 );
