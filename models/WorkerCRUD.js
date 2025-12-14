@@ -1,4 +1,3 @@
-const { Hasher } = require("../services/symmetricalEncryption/encryptor");
 const supabase = require("../supabase");
 
 async function addWorkerToDB(
