@@ -151,7 +151,11 @@ async function workerLogin(req, res) {
       maxAge: 1000 * 60 * 60 * 1, // Matches JWT expiration (1 hour)
       partitioned: true,
     })
-    .json({ success: true, message: "successfully worker login" });
+    .json({
+      success: true,
+      token: worker_token,
+      message: "successfully worker login",
+    });
 }
 
 module.exports = {
