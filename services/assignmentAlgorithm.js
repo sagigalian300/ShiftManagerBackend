@@ -10,7 +10,7 @@ const { getShiftsForWeekFromDB } = require("../models/ShiftCRUD");
 const { getAllRolesFromDB } = require("../models/RoleCRUD");
 const {
   getWorkerSuggestionsForWeekFromDB,
-} = require("../models/temp");
+} = require("../models/WorkerAssignmentsCRUD");
 const { getWorkerRolesFromDB, getAllWorkersFromDB } = require("../models/WorkerCRUD");
 /**
  * Assignment algorithm (greedy scoring) that builds an (approximate) optimal
