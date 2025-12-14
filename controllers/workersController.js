@@ -153,7 +153,6 @@ async function workerLogin(req, res) {
     })
     .json({
       success: true,
-      token: worker_token,
       message: "successfully worker login",
     });
 }

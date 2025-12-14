@@ -106,7 +106,7 @@ async function login(req, res) {
         maxAge: 1000 * 60 * 60 * 24, // Matches JWT expiration (1 day)
         partitioned: true,
       })
-      .json({ success: true, token: token, message: "Login successful" });
+      .json({ success: true, message: "Login successful" });
   } catch (err) {
     console.error("Login error:", err);
     return res
