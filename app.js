@@ -38,7 +38,7 @@ const corsOptions = {
 app.use(cors(corsOptions));
 
 // Routes
-// app.use("/user", usersRouter);
+app.use("/user", usersRouter);
 // app.use("/role", rolesRouter);
 // app.use("/worker", workersRouter);
 // app.use("/shift", shiftsRouter);
