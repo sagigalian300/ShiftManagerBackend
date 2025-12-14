@@ -104,6 +104,7 @@ async function login(req, res) {
         sameSite: "none",
         path: "/",
         maxAge: 1000 * 60 * 60 * 24, // Matches JWT expiration (1 day)
+        partitioned: true,
       })
       .json({ success: true, message: "Login successful" });
   } catch (err) {
