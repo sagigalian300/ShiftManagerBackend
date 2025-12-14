@@ -97,14 +97,25 @@ async function login(req, res) {
       expiresIn: "1d",
     });
     // Set cookie
+    // return res
+    //   .cookie("auth_token", token, {
+    //     httpOnly: true,
+    //     secure: true,
+    //     sameSite: "none",
+    //     path: "/",
+    //     maxAge: 1000 * 60 * 60 * 24, // Matches JWT expiration (1 day)
+    //     partitioned: true,
+    //   })
+    //   .json({ success: true, message: "Login successful" });
+
     return res
       .cookie("auth_token", token, {
         httpOnly: true,
-        secure: true,
-        sameSite: "none",
+        secure: true, // חובה (Vercel זה HTTPS)
+        sameSite: "Lax", // <--- שינוי: חזרנו ל-Lax (כעת העוגייה צד ראשון)
         path: "/",
-        maxAge: 1000 * 60 * 60 * 24, // Matches JWT expiration (1 day)
-        partitioned: true,
+        maxAge: 1000 * 60 * 60 * 24,
+        partitioned: false, // <--- שינוי: בוטל, לא נחוץ
       })
       .json({ success: true, message: "Login successful" });
   } catch (err) {

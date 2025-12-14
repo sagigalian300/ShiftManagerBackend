@@ -142,19 +142,29 @@ async function workerLogin(req, res) {
     JWT_SECRET,
     { expiresIn: "1h" }
   );
-  res
+  // res
+  //   .cookie("auth_token", worker_token, {
+  //     httpOnly: true,
+  //     secure: true,
+  //     sameSite: "none",
+  //     path: "/",
+  //     maxAge: 1000 * 60 * 60 * 1, // Matches JWT expiration (1 hour)
+  //     partitioned: true,
+  //   })
+  //   .json({
+  //     success: true,
+  //     message: "successfully worker login",
+  //   });
+  return res
     .cookie("auth_token", worker_token, {
       httpOnly: true,
-      secure: true,
-      sameSite: "none",
+      secure: true, // חובה (Vercel זה HTTPS)
+      sameSite: "Lax", // <--- שינוי: חזרנו ל-Lax (כעת העוגייה צד ראשון)
       path: "/",
-      maxAge: 1000 * 60 * 60 * 1, // Matches JWT expiration (1 hour)
-      partitioned: true,
+      maxAge: 1000 * 60 * 60 * 24,
+      partitioned: false, // <--- שינוי: בוטל, לא נחוץ
     })
-    .json({
-      success: true,
-      message: "successfully worker login",
-    });
+    .json({ success: true, message: "successfully worker login" });
 }
 
 module.exports = {
