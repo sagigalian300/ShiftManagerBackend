@@ -1,4 +1,4 @@
-const { encrypt } = require("../services/symmetricalEncryption/encryptor");
+/*const { encrypt } = require("../services/symmetricalEncryption/encryptor");
 
 const {
   addWeekToDB,
@@ -131,6 +131,41 @@ async function getWeekDataForExcelDocument(req, res) {
   }
   res.status(200).json({ weekData: result.weekData });
 }
+
+module.exports = {
+  addWeeklyShifts,
+  deleteWeek,
+  getAllWeeks,
+  getDaysByWeekId,
+  getShiftsByDayId,
+  addShiftAssignments,
+  getShiftAssignments,
+  getEncryptedBossAndWeek,
+  smartWeeklyShiftsBuilder,
+  getWeekDataForExcelDocument,
+};
+*/
+
+// --- שים את כל אלה בהערה ---
+// const { encrypt } = require("../services/symmetricalEncryption/encryptor");
+// const {
+//   addWeekToDB,
+//   ... (כל השאר)
+// } = require("../models/ShiftCRUD");
+// const { computeOptimalAssignment } = require("../services/assignmentAlgorithm");
+
+
+// --- פונקציות דמה זמניות כדי שהראוטר לא יקרוס ---
+async function addWeeklyShifts(req, res) { res.send("Disabled"); }
+async function deleteWeek(req, res) { res.send("Disabled"); }
+async function addShiftAssignments(req, res) { res.send("Disabled"); }
+async function getAllWeeks(req, res) { res.send("Disabled"); }
+async function getDaysByWeekId(req, res) { res.send("Disabled"); }
+async function getShiftsByDayId(req, res) { res.send("Disabled"); }
+async function getShiftAssignments(req, res) { res.send("Disabled"); }
+async function getEncryptedBossAndWeek(req, res) { res.send("Disabled"); }
+async function smartWeeklyShiftsBuilder(req, res) { res.send("Disabled"); }
+async function getWeekDataForExcelDocument(req, res) { res.send("Disabled"); }
 
 module.exports = {
   addWeeklyShifts,
