@@ -1,7 +1,7 @@
 const {
   getWeekToAssignToFromDB,
   addWorkerSuggestedAssignmentToDB,
-} = require("../models/workerAssignmentsCRUD");
+} = require("../models/WorkerAssignmentsCRUD");
 const { getWorkerNameById } = require("../models/WorkerCRUD");
 
 async function getWeekToAssignTo(req, res) {
