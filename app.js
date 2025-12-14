@@ -18,9 +18,6 @@ const PORT = process.env.PORT || 3001;
 const app = express();
 
 // Middleware
-app.use(express.json());
-app.use(cookieParser());
-
 const corsOptions = {
   origin: [
     "http://localhost:3000",
@@ -36,6 +33,8 @@ const corsOptions = {
   credentials: true,
 };
 app.use(cors(corsOptions));
+app.use(express.json());
+app.use(cookieParser());
 
 // Routes
 app.use("/user", usersRouter);
