@@ -10,7 +10,7 @@ const { getShiftsForWeekFromDB } = require("../models/ShiftCRUD");
 const { getAllRolesFromDB } = require("../models/RoleCRUD");
 const {
   getWorkerSuggestionsForWeekFromDB,
-} = require("../models/workerAssignmentsCRUD");
+} = require("../models/WorkerAssignmentsCRUD");
 const { getWorkerRolesFromDB } = require("../models/WorkerCRUD");
 const { getAllWorkersFromDB } = require("../models/WorkerCRUD");
 /**
