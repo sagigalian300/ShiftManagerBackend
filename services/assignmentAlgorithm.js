@@ -11,8 +11,7 @@ const { getAllRolesFromDB } = require("../models/RoleCRUD");
 const {
   getWorkerSuggestionsForWeekFromDB,
 } = require("../models/WorkerAssignmentsCRUD");
-const { getWorkerRolesFromDB } = require("../models/WorkerCRUD");
-const { getAllWorkersFromDB } = require("../models/WorkerCRUD");
+const { getWorkerRolesFromDB, getAllWorkersFromDB } = require("../models/WorkerCRUD");
 /**
  * Assignment algorithm (greedy scoring) that builds an (approximate) optimal
  * weekly shift assignment while trying to maximize total worker "price" (rank).
