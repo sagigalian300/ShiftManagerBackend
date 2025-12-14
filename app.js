@@ -4,7 +4,7 @@ const cookieParser = require("cookie-parser");
 require("dotenv").config();
 
 // Import Routers
-// const usersRouter = require("./routes/users");
+const usersRouter = require("./routes/users");
 // const rolesRouter = require("./routes/roles");
 // const workersRouter = require("./routes/worker");
 // const shiftsRouter = require("./routes/shifts");
