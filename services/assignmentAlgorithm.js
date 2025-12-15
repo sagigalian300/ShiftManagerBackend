@@ -4,7 +4,6 @@
     getWorkerSuggestionsForWeekFromDB(week_id)
     getWorkerRolesFromDB(userId)
     getAllWorkersFromDB(userId)
-
 */
 const { getShiftsForWeekFromDB } = require("../models/ShiftCRUD");
 const { getAllRolesFromDB } = require("../models/RoleCRUD");

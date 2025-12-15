@@ -11,7 +11,10 @@ const {
   insertOptimalWeeklyShiftAssignmentsToDB,
   getWeekDataForExcelDocumentFromDB,
 } = require("../models/ShiftCRUD");
-const { computeOptimalAssignment } = require("../services/assignmentAlgorithm");
+// const { computeOptimalAssignment } = require("../services/assignmentAlgorithm");// old algorithm that allows multiple shifts per day for a worker
+const {
+  computeOptimalAssignment,
+} = require("../services/assignmentAlgorithm2"); // this alrorithm uses day_id for constraints so each worker can work only one shift per day
 
 async function addWeeklyShifts(req, res) {
   const days = req.body;
@@ -103,6 +106,7 @@ async function smartWeeklyShiftsBuilder(req, res) {
   const user_id = req.user.userId.toString();
   try {
     const optimalAssignments = await computeOptimalAssignment(user_id, week_id);
+    // console.log("Optimal Assignments:", optimalAssignments);
     const result = await insertOptimalWeeklyShiftAssignmentsToDB(
       week_id,
       optimalAssignments.assignments
@@ -144,4 +148,3 @@ module.exports = {
   smartWeeklyShiftsBuilder,
   getWeekDataForExcelDocument,
 };
-
