@@ -40,7 +40,7 @@ async function computeOptimalAssignment(userId, weekId, options = {}) {
   // 1. Load data
   const [
     shifts,
-    suggestionsRows,
+    suggestionsRowsRes,
     workerRolesRows,
     { data: workersList },
     { data: allRoles },
@@ -51,6 +51,7 @@ async function computeOptimalAssignment(userId, weekId, options = {}) {
     getAllWorkersFromDB(userId),
     getAllRolesFromDB(userId),
   ]);
+  const suggestionsRows = suggestionsRowsRes.data;
 
   // Index suggestions
   const suggestionsByShift = new Map();
@@ -183,21 +184,27 @@ async function computeOptimalAssignment(userId, weekId, options = {}) {
 
   // --- יצירת דוח מסודר עם שמות ---
   // במקום להחזיר רק ID, אנחנו בונים אובייקט עם שמות קריאים
-  const assignedPerWorkerReadable = {};
+  // --- יצירת דוח מסודר וממוין (מהגבוה לנמוך, כולל 0) ---
 
-  // עוברים על המפה של הספירות (ID -> כמות)
-  for (const [wId, count] of assignedCount.entries()) {
-    const w = workerById.get(wId);
-    if (w) {
-      // יצירת המפתח בפורמט שביקשת: שם פרטי + משפחה + מזהה
-      const fullNameKey = `${w.first_name || ""} ${
-        w.last_name || ""
-      } (${wId})`.trim();
-      assignedPerWorkerReadable[fullNameKey] = count;
-    } else {
-      // גיבוי למקרה שאין פרטי עובד
-      assignedPerWorkerReadable[`Unknown Worker (${wId})`] = count;
-    }
+  // 1. הופכים את נתוני העובדים למערך כדי שנוכל למיין אותם
+  const sortedWorkersArray = Array.from(workerById.entries())
+    .map(([wId, workerObj]) => {
+      return {
+        id: wId,
+        fullName: `${workerObj.first_name || ""} ${
+          workerObj.last_name || ""
+        }`.trim(),
+        count: assignedCount.get(wId) || 0,
+      };
+    })
+    // 2. מיון: מהגבוה לנמוך לפי כמות המשמרות (count)
+    .sort((a, b) => b.count - a.count);
+
+  // 3. בניית האובייקט הסופי מהמערך הממוין
+  const assignedPerWorkerReadable = {};
+  for (const worker of sortedWorkersArray) {
+    const key = `${worker.fullName} (${worker.id})`;
+    assignedPerWorkerReadable[key] = worker.count;
   }
 
   // Stats calculation

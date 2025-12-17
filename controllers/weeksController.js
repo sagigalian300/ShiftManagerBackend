@@ -10,6 +10,7 @@ const {
   getShiftsAssignmentsFromDB,
   insertOptimalWeeklyShiftAssignmentsToDB,
   getWeekDataForExcelDocumentFromDB,
+  deleteShiftFromDB,
 } = require("../models/ShiftCRUD");
 // const { computeOptimalAssignment } = require("../services/assignmentAlgorithm");// old algorithm that allows multiple shifts per day for a worker
 const {
@@ -136,6 +137,17 @@ async function getWeekDataForExcelDocument(req, res) {
   res.status(200).json({ weekData: result.weekData });
 }
 
+async function deleteShift(req, res) {
+  const shift_id = req.params.shift_id;
+  const result = await deleteShiftFromDB(shift_id);
+  if (!result.success) {
+    res.status(500).json({ message: "Error deleting shift" });
+  }
+  res.status(200).json({
+    message: "Shift deleted successfully",
+  });
+}
+
 module.exports = {
   addWeeklyShifts,
   deleteWeek,
@@ -147,4 +159,5 @@ module.exports = {
   getEncryptedBossAndWeek,
   smartWeeklyShiftsBuilder,
   getWeekDataForExcelDocument,
+  deleteShift,
 };

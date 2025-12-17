@@ -13,6 +13,7 @@ const {
   smartWeeklyShiftsBuilder,
   getWeekDataForExcelDocument,
   deleteWeek,
+  deleteShift,
 } = require("../controllers/weeksController");
 
 const router = express.Router();
@@ -71,6 +72,12 @@ router.get(
   authenticate,
   authorize(["boss"]),
   getWeekDataForExcelDocument
+);
+router.delete(
+  "/deleteShift/:shift_id",
+  authenticate,
+  authorize(["boss"]),
+  deleteShift
 );
 
 module.exports = router;

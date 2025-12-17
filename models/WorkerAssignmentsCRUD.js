@@ -138,10 +138,64 @@ async function getWorkerSuggestionsForWeekFromDB(weekId) {
     shift_id: item.shift_id,
     week_id: item.shifts.days.week_id,
   }));
-  return flatData;
+  return { success: true, data: flatData };
 }
+
+async function getWorkersSuggestionsFullyDetailedForWeekFromDB(weekId) {
+  const { data, error } = await supabase
+    .from('worker_suggestions_assignment')
+    .select(`
+      worker_id,
+      shift_id,
+      workers!inner (
+        last_name,
+        users!workers_id_fkey!inner (
+          username
+        )
+      ),
+      shifts!inner (
+        type,
+        days!inner (
+          date,
+          date_name,
+          week_id
+        )
+      )
+    `)
+    .eq("shifts.days.week_id", weekId); // הוספת הסינון לפי שבוע
+
+  if (error) {
+    console.error("Error fetching data:", error);
+    return { success: false, error };
+  }
+
+  // יצירת המבנה המקובץ (Map-like Object)
+  const groupedByWorker = data.reduce((acc, item) => {
+    // יצירת מפתח ייחודי לעובד (שם משתמש + שם משפחה)
+    const workerKey = `${item.workers?.users?.username || 'Unknown'} ${item.workers?.last_name || ''}`.trim();
+
+    // אם העובד עדיין לא קיים ב-Map, ניצור לו מערך ריק
+    if (!acc[workerKey]) {
+      acc[workerKey] = [];
+    }
+
+    // הוספת פרטי המשמרת למערך של העובד
+    acc[workerKey].push({
+      shift_id: item.shift_id,
+      type: item.shifts?.type,
+      date: item.shifts?.days?.date,
+      date_name: item.shifts?.days?.date_name
+    });
+
+    return acc;
+  }, {});
+
+  return { success: true, data: groupedByWorker };
+}
+
 module.exports = {
   getWeekToAssignToFromDB,
   addWorkerSuggestedAssignmentToDB,
   getWorkerSuggestionsForWeekFromDB,
+  getWorkersSuggestionsFullyDetailedForWeekFromDB,
 };

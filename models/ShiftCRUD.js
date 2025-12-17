@@ -353,6 +353,15 @@ async function getWeekDataForExcelDocumentFromDB(week_id) {
   return { success: true, weekData };
 }
 
+async function deleteShiftFromDB(shift_id) {
+  const res = await supabase.from("shifts").delete().eq("id", shift_id);
+  if (res.error) {
+    console.error("Error deleting shift:", res.error);
+    return { success: false };
+  }
+  return { success: true };
+}
+
 module.exports = {
   addWeekToDB,
   deleteWeekFromDB,
@@ -364,4 +373,5 @@ module.exports = {
   getShiftsForWeekFromDB,
   insertOptimalWeeklyShiftAssignmentsToDB,
   getWeekDataForExcelDocumentFromDB,
+  deleteShiftFromDB,
 };

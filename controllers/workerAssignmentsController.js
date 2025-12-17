@@ -1,6 +1,8 @@
 const {
   getWeekToAssignToFromDB,
   addWorkerSuggestedAssignmentToDB,
+  getWorkerSuggestionsForWeekFromDB,
+  getWorkersSuggestionsFullyDetailedForWeekFromDB,
 } = require("../models/WorkerAssignmentsCRUD");
 const { getWorkerNameById } = require("../models/WorkerCRUD");
 
@@ -34,4 +36,18 @@ async function addWorkerSuggestedAssignment(req, res) {
   });
 }
 
-module.exports = { getWeekToAssignTo, addWorkerSuggestedAssignment };
+async function getWorkersSuggestionsForWeek(req, res) {
+  const weekId = req.params.weekId;
+  const result = await getWorkersSuggestionsFullyDetailedForWeekFromDB(weekId);
+  if (result.success) {
+    res.json({ success: true, data: result.data });
+  } else {
+    res.status(500).json({ success: false, error: result.error });
+  }
+}
+
+module.exports = {
+  getWeekToAssignTo,
+  addWorkerSuggestedAssignment,
+  getWorkersSuggestionsForWeek,
+};
