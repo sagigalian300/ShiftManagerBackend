@@ -40,7 +40,21 @@ async function getAllWorkersForBossIdFromDB(bossId) {
   }));
 }
 
+async function deleteBossFromDB(bossId) {
+  const { data, error } = await supabase
+    .from("users")
+    .delete()
+    .eq("id", bossId)
+    .contains("roles", ["boss"]);
+  if (error) {
+    console.error("Error deleting boss:", error);
+    return { success: false, error };
+  }
+  return { success: true, data };
+}
+
 module.exports = {
   getAllBossesFromDB,
   getAllWorkersForBossIdFromDB,
+  deleteBossFromDB,
 };
