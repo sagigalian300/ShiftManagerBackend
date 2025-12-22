@@ -3,7 +3,9 @@ const supabase = require("../supabase");
 async function addRoleToDB(name, desc, numOfWorkers, boss_id) {
   const { data, error } = await supabase
     .from("roles")
-    .insert([{ name, desc, numOfWorkers, boss_id }]);
+    .insert([{ name, desc, numOfWorkers, boss_id }])
+    .select()
+    .single();
   if (error) {
     console.error("Error adding role:", error);
     return { success: false, error };
@@ -35,8 +37,23 @@ async function getAllRolesFromDB(userId) {
   return { success: true, data };
 }
 
+async function updateRoleInDB(roleId, name, desc, numOfWorkers) {
+  const { data, error } = await supabase
+    .from("roles")
+    .update({ name, desc, numOfWorkers })
+    .eq("id", roleId)
+    .select()
+    .single();
+  if (error) {
+    console.error("Error updating role:", error);
+    return { success: false, error };
+  }
+  return { success: true, data };
+}
+
 module.exports = {
   addRoleToDB,
   getAllRolesFromDB,
   deleteRoleFromDB,
+  updateRoleInDB,
 };

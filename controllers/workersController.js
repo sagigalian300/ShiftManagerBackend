@@ -36,7 +36,7 @@ async function addWorker(req, res) {
     rank,
     bossId
   );
-  res.json({ success: true, data: result.data });
+  res.json({ success: true, newWorkerId: userId, data: result.data });
 }
 
 async function updateWorkerDetails(req, res) {

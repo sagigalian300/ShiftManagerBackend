@@ -1,4 +1,9 @@
-const { addRoleToDB, getAllRolesFromDB, deleteRoleFromDB } = require("../models/RoleCRUD");
+const {
+  addRoleToDB,
+  getAllRolesFromDB,
+  deleteRoleFromDB,
+  updateRoleInDB,
+} = require("../models/RoleCRUD");
 
 async function addRole(req, res) {
   const userId = req.user.userId;
@@ -37,9 +42,26 @@ async function getAllRoles(req, res) {
       .json({ message: "Error retrieving roles", error: result.error });
   }
 }
+async function updateRole(req, res) {
+  const { roleId } = req.params;
+  const { name, desc, numOfWorkers } = req.body;
+
+  const result = await updateRoleInDB(roleId, name, desc, numOfWorkers);
+
+  if (result.success) {
+    res
+      .status(200)
+      .json({ message: "Role updated successfully", data: result.data });
+  } else {
+    res
+      .status(500)
+      .json({ message: "Error updating role", error: result.error });
+  }
+}
 
 module.exports = {
   addRole,
   getAllRoles,
   deleteRole,
+  updateRole,
 };
