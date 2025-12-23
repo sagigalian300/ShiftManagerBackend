@@ -362,6 +362,39 @@ async function deleteShiftFromDB(shift_id) {
   return { success: true };
 }
 
+async function getShiftWorkersSuggestionsFromDB(shift_id) {
+  const { data, error } = await supabase
+    .from("worker_suggestions_assignment")
+    .select(`
+      shift_id,
+      workers!inner (
+        last_name,
+        users!workers_id_fkey!inner ( 
+          id,
+          username
+        )
+      )
+    `)
+    .eq("shift_id", shift_id);
+
+  if (error) {
+    console.error("Error fetching assignments:", error);
+    // Returning an object instead of sending a response directly
+    // prevents the ERR_HTTP_HEADERS_SENT error in your controller.
+    return { success: false, suggestions: null, message: error.message };
+  }
+
+  // Formatting based on the specific nested structure returned
+  const formattedData = data.map((row) => ({
+    id: row.workers?.users?.id,
+    shift_id: row.shift_id,
+    username: row.workers?.users?.username,
+    last_name: row.workers?.last_name,
+  }));
+
+  return { success: true, suggestions: formattedData };
+}
+
 module.exports = {
   addWeekToDB,
   deleteWeekFromDB,
@@ -374,4 +407,5 @@ module.exports = {
   insertOptimalWeeklyShiftAssignmentsToDB,
   getWeekDataForExcelDocumentFromDB,
   deleteShiftFromDB,
+  getShiftWorkersSuggestionsFromDB,
 };

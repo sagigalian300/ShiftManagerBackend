@@ -14,6 +14,7 @@ const {
   getWeekDataForExcelDocument,
   deleteWeek,
   deleteShift,
+  getShiftWorkersSuggestions,
 } = require("../controllers/weeksController");
 
 const router = express.Router();
@@ -72,6 +73,12 @@ router.get(
   authenticate,
   authorize(["boss"]),
   getWeekDataForExcelDocument
+);
+router.get(
+  "/getShiftWorkersSuggestions/:shift_id",
+  authenticate,
+  authorize(["boss"]),
+  getShiftWorkersSuggestions
 );
 router.delete(
   "/deleteShift/:shift_id",

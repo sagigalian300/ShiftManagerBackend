@@ -11,6 +11,7 @@ const {
   insertOptimalWeeklyShiftAssignmentsToDB,
   getWeekDataForExcelDocumentFromDB,
   deleteShiftFromDB,
+  getShiftWorkersSuggestionsFromDB,
 } = require("../models/ShiftCRUD");
 // const { computeOptimalAssignment } = require("../services/assignmentAlgorithm");// old algorithm that allows multiple shifts per day for a worker
 const {
@@ -148,6 +149,18 @@ async function deleteShift(req, res) {
   });
 }
 
+async function getShiftWorkersSuggestions(req, res) {
+  const shift_id = req.params.shift_id;
+  
+  const result = await getShiftWorkersSuggestionsFromDB(shift_id);
+  if (!result.success) {
+    res
+      .status(500)
+      .json({ message: "Error fetching shift workers suggestions" });
+  }
+  res.status(200).json({ suggestions: result.suggestions });
+}
+
 module.exports = {
   addWeeklyShifts,
   deleteWeek,
@@ -160,4 +173,5 @@ module.exports = {
   smartWeeklyShiftsBuilder,
   getWeekDataForExcelDocument,
   deleteShift,
+  getShiftWorkersSuggestions,
 };
