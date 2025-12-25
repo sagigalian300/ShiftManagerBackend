@@ -323,7 +323,7 @@ async function getWeekDataForExcelDocumentFromDB(week_id) {
 
   // If no week found, return early
   if (!data || data.length === 0) {
-    return { success: false, error: "Week not found" };
+    return { success: true, weekData: [] };
   }
 
   const weekData = data[0];
@@ -365,7 +365,8 @@ async function deleteShiftFromDB(shift_id) {
 async function getShiftWorkersSuggestionsFromDB(shift_id) {
   const { data, error } = await supabase
     .from("worker_suggestions_assignment")
-    .select(`
+    .select(
+      `
       shift_id,
       workers!inner (
         last_name,
@@ -374,7 +375,8 @@ async function getShiftWorkersSuggestionsFromDB(shift_id) {
           username
         )
       )
-    `)
+    `
+    )
     .eq("shift_id", shift_id);
 
   if (error) {

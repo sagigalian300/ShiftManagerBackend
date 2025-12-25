@@ -132,6 +132,7 @@ async function smartWeeklyShiftsBuilder(req, res) {
 async function getWeekDataForExcelDocument(req, res) {
   const week_id = req.params.week_id;
   const result = await getWeekDataForExcelDocumentFromDB(week_id);
+
   if (!result.success) {
     res.status(500).json({ message: "Error fetching week data for Excel" });
   }
